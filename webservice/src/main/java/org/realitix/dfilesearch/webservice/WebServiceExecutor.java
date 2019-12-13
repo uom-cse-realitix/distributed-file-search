@@ -21,7 +21,7 @@ import java.util.Collections;
 public class WebServiceExecutor {
 
     private static ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-    private static Logger logger = Logger.getLogger(WebServiceExecutor.class);
+    private static Logger logger = Logger.getRootLogger();
     private static Configuration configuration;
 
     public static void main(String[] args) {
@@ -63,7 +63,7 @@ public class WebServiceExecutor {
         private FileResponse synthesizeFile(String fileName){
             logger.info("Synthesizing the file");
             String randomString = fileName + RandomStringUtils.randomAlphabetic(20).toUpperCase();
-            int size = (int) ((Math.random() * ((10 - 2) + 1)) + 2);
+            int size = (int) ((Math.random() * ((10 - 2) + 1)) + 2);    // change this to a more random algorithm
             FileResponse fileResponse = new FileResponse();
             fileResponse.setFileSize(size);
             fileResponse.setHash(DigestUtils.sha1Hex(randomString));

@@ -11,6 +11,7 @@
     <modules>
         <module>webservice</module>
         <module>filesearch</module>
+        <module>bootstrapserver</module>
     </modules>
 
 

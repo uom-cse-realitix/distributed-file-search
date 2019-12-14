@@ -28,7 +28,10 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
     @Override
     public void run(FileExecutorConfiguration fileExecutorConfiguration, Environment environment)
             throws Exception {
+        // Note: path to configuration file can be provided via a command line argument. Check the run configurations I've given. It points to configuration.yaml.
         WebServiceExecutor.runServer();
+
+        // run UDP server.
     }
 
 }

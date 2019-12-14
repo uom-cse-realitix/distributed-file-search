@@ -12,12 +12,63 @@
 
     <artifactId>filesearch</artifactId>
 
+    <properties>
+        <dropwizard.version>2.0.0</dropwizard.version>
+        <webservice.version>0.0.1-SNAPSHOT</webservice.version>
+        <nettty.version>4.1.43.Final</nettty.version>
+        <log4j.version>1.2.17</log4j.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.realitix.dfilesearch</groupId>
             <artifactId>webservice</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${webservice.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>${nettty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.dropwizard</groupId>
+            <artifactId>dropwizard-core</artifactId>
+            <version>${dropwizard.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>${log4j.version}</version>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <archive>
+                                <manifest>
+                                    <mainClass>
+                                        org.realitix.dfilesearch.filesearch.FileSearchExecutor
+                                    </mainClass>
+                                </manifest>
+                            </archive>
+                            <descriptorRefs>
+                                <descriptorRef>jar-with-dependencies</descriptorRef>
+                            </descriptorRefs>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

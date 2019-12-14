@@ -6,7 +6,7 @@ A distributed methodology to search files in a system.
 
 * Phase 1: Design network topology
 * Phase 2: Design & Develop a socket-based solution to find files requested by different nodes.
-* Pase 3: Web service (REST API) to support file transfer.
+* Phase 3: Web service (REST API) to support file transfer.
 
 ## Notes
 

@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 
@@ -26,7 +25,8 @@ public class WebServiceExecutor {
 
     public static void main(String[] args) {
         try {
-            configuration = mapper.readValue(new File("config.yaml"), Configuration.class);
+            configuration = mapper.readValue(ClassLoader.getSystemResource("config.yaml"),
+                    Configuration.class);
         } catch (IOException e) {
             logger.error(e.getMessage());
         }

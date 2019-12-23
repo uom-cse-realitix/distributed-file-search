@@ -53,8 +53,6 @@ public class RegisterRequest implements CommonMessage {
      * @return length of the message
      */
     private int calculateLength() {
-        System.out.println("IP: " + ip.length());
-        System.out.println("PORT: " + String.valueOf(port).length());
         return 4 + 4 + 3 + ip.length() + String.valueOf(port).length() + username.length();
     }
 

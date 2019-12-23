@@ -60,7 +60,7 @@ public class UDPClient {
         try {
             channel = b.bind(host, port).sync().channel();
 //            write(channel, (new RegisterRequest("0036", config.getHost(), config.getPort(), config.getUsername())), bootstrapIp, bootstrapPort);
-            write(channel, (new RegisterRequest("0036", host, port, username)), bootstrapIp, bootstrapPort);
+            write(channel, (new RegisterRequest(host, port, username)), bootstrapIp, bootstrapPort);
         } catch (InterruptedException e) {
             logger.error(e.getMessage());
         } finally {

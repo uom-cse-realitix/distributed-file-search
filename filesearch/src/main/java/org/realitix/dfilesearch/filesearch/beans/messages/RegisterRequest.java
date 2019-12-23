@@ -8,8 +8,7 @@ public class RegisterRequest implements CommonMessage {
     private int port;
     private String username;
 
-    public RegisterRequest(String length, String ip, int port, String username) {
-        this.length = length;
+    public RegisterRequest(String ip, int port, String username) {
         this.ip = ip;
         this.port = port;
         this.username = username;
@@ -47,8 +46,20 @@ public class RegisterRequest implements CommonMessage {
         this.username = username;
     }
 
+    /**
+     * 4 initial digits to represent length
+     * 4 spaces
+     * 3 for REG
+     * @return length of the message
+     */
+    private int calculateLength() {
+        System.out.println("IP: " + ip.length());
+        System.out.println("PORT: " + String.valueOf(port).length());
+        return 4 + 4 + 3 + ip.length() + String.valueOf(port).length() + username.length();
+    }
+
     @Override
     public String toString() {
-        return length + " " + key + " " + ip + " " + port + " " + username;
+        return "00" + calculateLength() + " " + key + " " + ip + " " + port + " " + username;
     }
 }

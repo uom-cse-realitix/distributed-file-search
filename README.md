@@ -12,7 +12,7 @@ A distributed methodology to search files in a system.
 
 1. Run `bootstrapserver-1.0-SNAPSHOT.jar` using `java -jar bootstrapserver-1.0-SNAPSHOT.jar`.
 2. Build `filesearch` module using `mvn clean install`.
-3. Run the `.jar` file generated in `filesearch/target` using `java -jar filesearch-1.0-SNAPSHOT.jar <PORT> <USERNAME>` (Replace `<PORT>` and `<USERNAME>` with your own data).
+3. Run the `.jar` file generated in `filesearch/target` using `java -jar filesearch-1.0-SNAPSHOT.jar <PORT> <USERNAME>` (Replace `<PORT>` and `<USERNAME>` with your own data; e.g. `5001` and `1234abcd`).
 4. Observe the BootstrapServer console and consoles of each node (pay attention to console outputs. The response messages are logged. Check for the log message below for an instance)  by registering multiple nodes.
  
 ```

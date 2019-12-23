@@ -33,11 +33,11 @@ server:                     # HTTP server details
   adminConnectors:
     - type: http
       port: 8092
-ports:                    # client details
+ports:                     # client details
   port: 5001
   host: 127.0.0.1
   username: 1234abcd
-bootstrapServer:          # bootstrap server details
+bootstrapServer:           # bootstrap server details
   port: 55555
   host: 127.0.0.1
 ```

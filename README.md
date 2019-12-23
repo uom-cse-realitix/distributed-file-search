@@ -1,4 +1,4 @@
-# Distributed File Searcher
+# Distributed P2P File Sharing System
 
 A distributed methodology to search files in a system.
 

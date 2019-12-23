@@ -14,7 +14,7 @@ public class FileExecutorConfiguration extends Configuration {
     @NotEmpty
     private String name;
 
-    private Port ports;
+    private Client ports;
 
     @JsonProperty
     public String getName() {
@@ -26,11 +26,11 @@ public class FileExecutorConfiguration extends Configuration {
         this.name = name;
     }
 
-    public Port getPorts() {
+    public Client getPorts() {
         return ports;
     }
 
-    public void setPorts(Port ports) {
+    public void setPorts(Client ports) {
         this.ports = ports;
     }
 }

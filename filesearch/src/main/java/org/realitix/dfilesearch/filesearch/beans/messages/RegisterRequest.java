@@ -1,6 +1,6 @@
-package org.realitix.dfilesearch.filesearch.messages;
+package org.realitix.dfilesearch.filesearch.beans.messages;
 
-public class Register implements IMessage{
+public class RegisterRequest implements CommonMessage {
 
     private String length;
     private final String key = "REG";
@@ -8,7 +8,7 @@ public class Register implements IMessage{
     private int port;
     private String username;
 
-    public Register(String length, String ip, int port, String username) {
+    public RegisterRequest(String length, String ip, int port, String username) {
         this.length = length;
         this.ip = ip;
         this.port = port;

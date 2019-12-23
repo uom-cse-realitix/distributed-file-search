@@ -21,13 +21,13 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        // Send the JOIN request, which will be parsed and responded by the server.
         logger.info("Channel Active!");
     }
 
-    protected void channelRead0(ChannelHandlerContext channelHandlerContext, DatagramPacket datagramPacket) throws Exception {
+    protected void channelRead0(ChannelHandlerContext channelHandlerContext, DatagramPacket datagramPacket) {
         String message = datagramPacket.content().toString(CharsetUtil.UTF_8);
-        logger.info("RECEIVED: " + message);
+        logger.info("Response message: " + message);
+        processResponse(message);
     }
 
     @Override
@@ -37,6 +37,15 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        super.channelInactive(ctx);
+       logger.info("Connection inactive..");
+    }
+
+    private void processResponse(String string) {
+        String[] splitResponse = string.split(" ");
+        if (splitResponse[1].equals("REGOK")) {
+            logger.info("ACK for REG received.");
+        } else {
+            logger.error("Undetermined response from the server.");
+        }
     }
 }

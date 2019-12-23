@@ -11,7 +11,15 @@ A distributed methodology to search files in a system.
 ## Progress
 
 1. Run `bootstrapserver-1.0-SNAPSHOT.jar` using `java -jar bootstrapserver-1.0-SNAPSHOT.jar`.
-2. Run `UDPClientExecutor.java`.
+2. Build `filesearch` module using `mvn clean install`.
+3. Run the `.jar` file generated in `filesearch/target` using `java -jar filesearch-1.0-SNAPSHOT.jar <PORT> <USERNAME>` (Replace `<PORT>` and `<USERNAME>` with your own data).
+4. Observe the BootstrapServer console and consoles of each node (pay attention to console outputs. The response messages are logged. Check for the log message below for an instance)  by registering multiple nodes.
+ 
+```
+13:10:22.546 [nioEventLoopGroup-2-1] INFO org.realitix.dfilesearch.filesearch.socket.UDPClientHandler - Response message: 0042 REGOK 2 127.0.0.1 5001 127.0.0.1 5002
+```
+ 
+The above message shows that the bootstrap server has sent the `REGOK` along with the IPs and ports of the currently registered nodes when a third node has requested `REG`.
 
 ## Notes
 

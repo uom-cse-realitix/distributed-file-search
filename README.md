@@ -12,7 +12,7 @@ A distributed methodology to search files in a system.
 
 1. Run `bootstrapserver-1.0-SNAPSHOT.jar` using `java -jar bootstrapserver-1.0-SNAPSHOT.jar`.
 2. Provide the configurations to the `configuration.yaml`.
-3. Build `filesearch` module using `mvn clean install`. Note that I've included a plugin which copies an instance of `configuration.yaml` to `filesearch/target`.
+3. Build `filesearch` module using `mvn clean install -DskipTests`. Note that I've included a plugin which copies an instance of `configuration.yaml` to `filesearch/target`.
 3. Run the `.jar` file generated in `filesearch/target` using `java -jar filesearch-1.0-SNAPSHOT.jar server configuration.yaml`. To run multiple instances, simply change the ports (specially the HTTP port specified as `server`) in `configuration.yaml`.
 4. Observe the BootstrapServer console and consoles of each node (pay attention to console outputs. The response messages are logged. Check for the log message below for an instance)  by registering multiple nodes.
  

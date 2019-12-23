@@ -28,15 +28,16 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
         String message = datagramPacket.content().toString(CharsetUtil.UTF_8);
         logger.info("Response message: " + message);
         processResponse(message);
+        channelHandlerContext.channel().close();
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         logger.error(cause.getMessage());
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    public void channelInactive(ChannelHandlerContext ctx) {
        logger.info("Connection inactive..");
     }
 
@@ -48,4 +49,5 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
             logger.error("Undetermined response from the server.");
         }
     }
+
 }

@@ -14,7 +14,9 @@ public class FileExecutorConfiguration extends Configuration {
     @NotEmpty
     private String name;
 
-    private Client ports;
+    private NodeConfiguration ports;
+
+    private NodeConfiguration bootstrapServer;
 
     @JsonProperty
     public String getName() {
@@ -26,11 +28,19 @@ public class FileExecutorConfiguration extends Configuration {
         this.name = name;
     }
 
-    public Client getPorts() {
+    public NodeConfiguration getPorts() {
         return ports;
     }
 
-    public void setPorts(Client ports) {
+    public void setPorts(NodeConfiguration ports) {
         this.ports = ports;
+    }
+
+    public NodeConfiguration getBootstrapServer() {
+        return bootstrapServer;
+    }
+
+    public void setBootstrapServer(NodeConfiguration bootstrapServer) {
+        this.bootstrapServer = bootstrapServer;
     }
 }

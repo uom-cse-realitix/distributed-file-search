@@ -1,7 +1,5 @@
 package org.realitix.dfilesearch.filesearch.socket;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
@@ -14,10 +12,6 @@ import io.netty.util.internal.SocketUtils;
 import org.apache.log4j.Logger;
 import org.realitix.dfilesearch.filesearch.beans.messages.CommonMessage;
 import org.realitix.dfilesearch.filesearch.beans.messages.RegisterRequest;
-import org.realitix.dfilesearch.filesearch.configuration.Client;
-
-import java.io.IOException;
-import java.io.InputStream;
 
 public class UDPClient {
 
@@ -25,9 +19,7 @@ public class UDPClient {
     private int port;
     private String username;
     private final Logger logger = Logger.getLogger(UDPClient.class);
-    private static ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
     private EventLoopGroup workerGroup;
-    private Client config;
 
     public UDPClient(String host, int port, String username) {
         this.host = host;
@@ -40,14 +32,10 @@ public class UDPClient {
      * Runs the client socket
      * @param bootstrapIp server host IP
      * @param bootstrapPort server port
-     * @param host ip of the client
-     * @param port of the client socket
      * host and port should be configured in the jar.
-     * @return channel connecting the client and the server
      */
-    public Channel run(String bootstrapIp, int bootstrapPort, String host, int port, String username) throws IOException {
-//        this.config = readFromResources("config.yaml");
-        Channel channel = null;
+    public void messageBootstrapServer(String bootstrapIp, int bootstrapPort) {
+        Channel channel;
         Bootstrap b = new Bootstrap();
         b.group(getWorkerGroup())
                 .channel(NioDatagramChannel.class)
@@ -58,15 +46,11 @@ public class UDPClient {
                     }
                 });
         try {
-            channel = b.bind(host, port).sync().channel();
-//            write(channel, (new RegisterRequest("0036", config.getHost(), config.getPort(), config.getUsername())), bootstrapIp, bootstrapPort);
+            channel = b.bind(this.host, this.port).sync().await().channel();
             write(channel, (new RegisterRequest(host, port, username)), bootstrapIp, bootstrapPort);
         } catch (InterruptedException e) {
             logger.error(e.getMessage());
-        } finally {
-//            group.shutdownGracefully(); TODO: Shutdown gracefully. If you shutdown here, the socket will be closed. Shutdown upon errors or by the discretion of the server.
         }
-        return channel;
     }
 
     /**
@@ -78,40 +62,11 @@ public class UDPClient {
      * @throws InterruptedException
      */
     private void write(Channel channel, CommonMessage message, String bootstrapIp, int bootstrapPort) throws InterruptedException {
-        channel.writeAndFlush(new DatagramPacket(Unpooled.copiedBuffer(message.toString(), CharsetUtil.UTF_8), SocketUtils.socketAddress(bootstrapIp, bootstrapPort))).sync();
+       channel.writeAndFlush(new DatagramPacket(Unpooled.copiedBuffer(message.toString(), CharsetUtil.UTF_8), SocketUtils.socketAddress(bootstrapIp, bootstrapPort))).sync().await();
     }
 
-    private Client readFromResources(String fileName) throws IOException {
-        InputStream stream = this.getClass().getClassLoader().getResourceAsStream(fileName);
-        Client client = mapper.readValue(stream, Client.class);
-        return client;
-    }
-
-    public String getHost() {
-        return host;
-    }
-
-    public void setHost(String host) {
-        this.host = host;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
-    }
-
-    public EventLoopGroup getWorkerGroup() {
+    private EventLoopGroup getWorkerGroup() {
         return workerGroup;
     }
 
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
 }

@@ -8,14 +8,12 @@ import java.io.IOException;
 
 public class UDPClientExecutor {
 
+    private static final Logger logger = LogManager.getLogger(UDPClientExecutor.class);
+
     public static void main(String[] args) {
         BasicConfigurator.configure();
-        UDPClient client = new UDPClient("127.0.0.1", 5001, "1234abcd");
-        try {
-            client.run("127.0.0.1", 55555, "127.0.0.1" , Integer.parseInt(args[0]), args[1]);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        UDPClient client = new UDPClient(args[0], Integer.parseInt(args[1]) , args[2]);
+        client.messageBootstrapServer("127.0.0.1", 55555);
     }
 
 }

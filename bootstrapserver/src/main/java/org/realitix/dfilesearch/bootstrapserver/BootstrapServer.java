@@ -3,14 +3,11 @@ package org.realitix.dfilesearch.bootstrapserver;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.StringTokenizer;
+import java.util.*;
 
 public class BootstrapServer {
 
-    public static void main(String args[])
+    public static void main(String[] args)
     {
         DatagramSocket sock = null;
         String s;

@@ -29,7 +29,6 @@ public class UDPServer {
         } finally {
             group.shutdownGracefully();
         }
-
         return this;
     }
 }

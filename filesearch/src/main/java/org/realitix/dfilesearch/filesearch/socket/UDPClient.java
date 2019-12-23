@@ -40,10 +40,12 @@ public class UDPClient {
      * Runs the client socket
      * @param bootstrapIp server host IP
      * @param bootstrapPort server port
+     * @param host ip of the client
+     * @param port of the client socket
+     * host and port should be configured in the jar.
      * @return channel connecting the client and the server
-     * TODO: After the initial handshakes and housekeeping, the client should connect to other peers (for file sharing). Thus, "host" and "port" should resemble those of that peers. This can be facilitated by giving some sort of a map. Think about it. Or, we should close the connection with the BS and initiate another connection with the peers after the initial handshakes.
      */
-    Channel run(String bootstrapIp, int bootstrapPort, String host, int port, String username) throws IOException {
+    public Channel run(String bootstrapIp, int bootstrapPort, String host, int port, String username) throws IOException {
 //        this.config = readFromResources("config.yaml");
         Channel channel = null;
         Bootstrap b = new Bootstrap();
@@ -56,7 +58,7 @@ public class UDPClient {
                     }
                 });
         try {
-            channel = b.bind(port).sync().channel();
+            channel = b.bind(host, port).sync().channel();
 //            write(channel, (new RegisterRequest("0036", config.getHost(), config.getPort(), config.getUsername())), bootstrapIp, bootstrapPort);
             write(channel, (new RegisterRequest("0036", host, port, username)), bootstrapIp, bootstrapPort);
         } catch (InterruptedException e) {

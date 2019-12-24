@@ -3,6 +3,7 @@ package org.realitix.dfilesearch.filesearch;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import io.netty.channel.Channel;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.log4j.BasicConfigurator;
@@ -10,8 +11,10 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.realitix.dfilesearch.filesearch.configuration.FileExecutorConfiguration;
 import org.realitix.dfilesearch.filesearch.socket.UDPClient;
+import org.realitix.dfilesearch.filesearch.socket.UDPServer;
 import org.realitix.dfilesearch.filesearch.util.NodeMap;
 import org.realitix.dfilesearch.webservice.beans.FileResponse;
+import org.springframework.boot.autoconfigure.couchbase.CouchbaseProperties;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -39,16 +42,37 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
     @Override
     public void run(FileExecutorConfiguration fileExecutorConfiguration, Environment environment) {
         BasicConfigurator.configure();
+        registerBackendClient(environment, fileExecutorConfiguration);
+        startWebService(environment, fileExecutorConfiguration);
+        startUdpServer(environment, fileExecutorConfiguration);
+    }
+
+    private void startWebService(Environment environment, FileExecutorConfiguration configuration) {
+        logger.info("Enabling Web Service..");
         environment.jersey().register(new FileSharingResource());
+    }
+
+    private Channel startUdpServer(Environment environment, FileExecutorConfiguration configuration) {
+        UDPServer server = UDPServer.UDPServerBuilder
+                .newInstance()
+                .setHost(configuration.getUdpServer().getHost())
+                .setPort(configuration.getUdpServer().getPort())
+                .build();
+        final Channel channel = server.listen();
+        return channel;
+    }
+
+    private UDPClient registerBackendClient(Environment environment, FileExecutorConfiguration configuration) {
         UDPClient client = UDPClient.UDPClientBuilder
                 .newInstance()
-                .setHost(fileExecutorConfiguration.getPorts().getHost())
-                .setPort(fileExecutorConfiguration.getPorts().getPort())
-                .setUsername(fileExecutorConfiguration.getPorts().getUsername())
+                .setHost(configuration.getPorts().getHost())
+                .setPort(configuration.getPorts().getPort())
+                .setUsername(configuration.getPorts().getUsername())
                 .build();
         client.messageBootstrapServer(
-                    fileExecutorConfiguration.getBootstrapServer().getHost(),
-                    fileExecutorConfiguration.getBootstrapServer().getPort());
+                configuration.getBootstrapServer().getHost(),
+                configuration.getBootstrapServer().getPort());
+        return client;
     }
 
     @Path("/file")

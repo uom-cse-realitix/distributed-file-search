@@ -1,6 +1,8 @@
 package org.realitix.dfilesearch.filesearch.socket;
 
 import io.netty.bootstrap.Bootstrap;
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -20,7 +22,14 @@ public class UDPServer {
         this.port = builder.port;
     }
 
-    public UDPServer run() {
+    /**
+     * Note: https://stackoverflow.com/questions/41505852/netty-closefuture-sync-channel-blocks-rest-api
+     * ServerBootstrap allows many client to connect via its channel. Therefore TCP has a dedicated ServerSocketChannel.
+     * Bootstrap is used to create channels for single connections. Because UDP has one channel for all clients it makes sense that only the Bootstrap is required. All clients bind to the same channel.
+     * @return the udp server
+     */
+    public Channel listen() {
+        Channel channel = null;
         EventLoopGroup group = new NioEventLoopGroup();
         Bootstrap b = new Bootstrap();
         b.group(group)
@@ -28,13 +37,12 @@ public class UDPServer {
                 .option(ChannelOption.SO_BROADCAST, true)
                 .handler(new UDPServerHandler());
         try {
-            b.bind(host, port).sync().channel().closeFuture().await();
+            channel = b.bind(host, port).sync().channel(); // .sync().channel().closeFuture.await()
+            logger.info("WS UDP server listening to port: " + port);
         } catch (InterruptedException e) {
             logger.error(e.getMessage());
-        } finally {
-            group.shutdownGracefully();
         }
-        return this;
+        return channel;
     }
 
     /**

@@ -42,6 +42,15 @@ bootstrapServer:           # bootstrap server details
   host: 127.0.0.1
 ```
 
+
+### Netstat commands
+
+* Check for port 9000: `netstat -tulpn | grep 9000
+`
+
+* Send messages to UDP serveer: `echo -n "hello" | nc -4u localhost 9000`
+
+
 ## Notes
 
 1. After the initial handshakes and housekeeping, the client should connect to other peers (for file sharing). Thus, "host" and "port" should resemble those of that peers. This can be facilitated by giving some sort of a map. Think about it. Or, we should close the connection with the BS and initiate another connection with the peers after the initial handshakes.After the initial handshakes and housekeeping, the client should connect to other peers (for file sharing). Thus, "host" and "port" should resemble those of that peers. This can be facilitated by giving some sort of a map. Think about it. Or, we should close the connection with the BS and initiate another connection with the peers after the initial handshakes. This should be remedied in `UDPClient.java` file in its `run()` method.

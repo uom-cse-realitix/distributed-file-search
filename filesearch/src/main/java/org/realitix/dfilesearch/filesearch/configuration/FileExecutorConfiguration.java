@@ -18,6 +18,8 @@ public class FileExecutorConfiguration extends Configuration {
 
     private NodeConfiguration bootstrapServer;
 
+    private UDPServerConfiguration udpServer;
+
     @JsonProperty
     public String getName() {
         return name;
@@ -42,5 +44,13 @@ public class FileExecutorConfiguration extends Configuration {
 
     public void setBootstrapServer(NodeConfiguration bootstrapServer) {
         this.bootstrapServer = bootstrapServer;
+    }
+
+    public UDPServerConfiguration getUdpServer() {
+        return udpServer;
+    }
+
+    public void setUdpServer(UDPServerConfiguration udpServer) {
+        this.udpServer = udpServer;
     }
 }

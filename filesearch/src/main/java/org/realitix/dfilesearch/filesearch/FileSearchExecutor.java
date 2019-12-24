@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import org.realitix.dfilesearch.filesearch.configuration.FileExecutorConfiguration;
 import org.realitix.dfilesearch.filesearch.resources.FileSharingResource;
 import org.realitix.dfilesearch.filesearch.socket.UDPClient;
+import org.realitix.dfilesearch.filesearch.socket.UDPServer;
 import org.realitix.dfilesearch.filesearch.util.NodeMap;
 
 public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
@@ -31,7 +32,16 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
     public void run(FileExecutorConfiguration fileExecutorConfiguration, Environment environment) {
         BasicConfigurator.configure();
         environment.jersey().register(new FileSharingResource());
-        UDPClient client = new UDPClient(fileExecutorConfiguration.getPorts().getHost() , fileExecutorConfiguration.getPorts().getPort() , fileExecutorConfiguration.getPorts().getUsername());
-        client.messageBootstrapServer(fileExecutorConfiguration.getBootstrapServer().getHost(), fileExecutorConfiguration.getBootstrapServer().getPort());
+        UDPClient client = UDPClient.UDPClientBuilder
+                .newInstance()
+                .setHost(fileExecutorConfiguration.getPorts().getHost())
+                .setPort(fileExecutorConfiguration.getPorts().getPort())
+                .setUsername(fileExecutorConfiguration.getPorts().getUsername())
+                .build();
+        client.messageBootstrapServer
+                (
+                    fileExecutorConfiguration.getBootstrapServer().getHost(),
+                    fileExecutorConfiguration.getBootstrapServer().getPort()
+                );
     }
 }

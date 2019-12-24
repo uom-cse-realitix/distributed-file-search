@@ -13,3 +13,6 @@ ports:
 bootstrapServer:
   port: 55555
   host: 127.0.0.1
+udpServer:
+  port: 9000
+  host: 127.0.0.1

@@ -21,10 +21,10 @@ public class UDPClient {
     private final Logger logger = Logger.getLogger(UDPClient.class);
     private EventLoopGroup workerGroup;
 
-    public UDPClient(String host, int port, String username) {
-        this.host = host;
-        this.port = port;
-        this.username = username;
+    private UDPClient(UDPClientBuilder builder) {
+        this.host = builder.host;
+        this.port = builder.port;
+        this.username = builder.username;
         this.workerGroup = new NioEventLoopGroup();
     }
 
@@ -69,4 +69,52 @@ public class UDPClient {
         return workerGroup;
     }
 
+    private UDPClient setHost(String host) {
+        this.host = host;
+        return this;
+    }
+
+    private UDPClient setPort(int port) {
+        this.port = port;
+        return this;
+    }
+
+    private UDPClient setUsername(String username) {
+        this.username = username;
+        return this;
+    }
+
+    public static class UDPClientBuilder {
+        private String host;
+        private int port;
+        private String username;
+
+        public static UDPClientBuilder newInstance() {
+            return new UDPClientBuilder();
+        }
+
+        private UDPClientBuilder() {}
+
+        public UDPClientBuilder setHost(String host) {
+            this.host = host;
+            return this;
+        }
+
+        public UDPClientBuilder setPort(int port) {
+            this.port = port;
+            return this;
+        }
+
+        public UDPClientBuilder setUsername(String username) {
+            this.username = username;
+            return this;
+        }
+
+        public UDPClient build() {
+            return new UDPClient(this);
+        }
+    }
+
+
 }
+

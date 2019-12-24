@@ -7,14 +7,19 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import org.apache.log4j.Logger;
 
+/**
+ * Runs a UDP server at port specified in the constructor.
+ */
 public class UDPServer {
-    private static final int PORT = 9000;
     private final Logger logger = Logger.getLogger(UDPServer.class);
+    private String host;
+    private int port;
 
-    /**
-     * Runs a UDP server at port 9000.
-     * TODO: Get the port number to an external config file.
-     */
+    public UDPServer(UDPServerBuilder builder) {
+        this.host = builder.host;
+        this.port = builder.port;
+    }
+
     public UDPServer run() {
         EventLoopGroup group = new NioEventLoopGroup();
         Bootstrap b = new Bootstrap();
@@ -23,12 +28,37 @@ public class UDPServer {
                 .option(ChannelOption.SO_BROADCAST, true)
                 .handler(new UDPServerHandler());
         try {
-            b.bind(PORT).sync().channel().closeFuture().await();
+            b.bind(host, port).sync().channel().closeFuture().await();
         } catch (InterruptedException e) {
             logger.error(e.getMessage());
         } finally {
             group.shutdownGracefully();
         }
         return this;
+    }
+
+    public static class UDPServerBuilder {
+        private String host;
+        private int port;
+
+        private UDPServerBuilder() {}
+
+        public static UDPServerBuilder newInstance() {
+            return new UDPServerBuilder();
+        }
+
+        public UDPServerBuilder setHost(String host) {
+            this.host = host;
+            return this;
+        }
+
+        public UDPServerBuilder setPort(int port) {
+            this.port = port;
+            return this;
+        }
+
+        public UDPServer build() {
+            return new UDPServer(this);
+        }
     }
 }

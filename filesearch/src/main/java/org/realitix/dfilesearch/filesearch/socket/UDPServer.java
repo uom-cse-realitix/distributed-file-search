@@ -15,7 +15,7 @@ public class UDPServer {
     private String host;
     private int port;
 
-    public UDPServer(UDPServerBuilder builder) {
+    private UDPServer(UDPServerBuilder builder) {
         this.host = builder.host;
         this.port = builder.port;
     }
@@ -37,6 +37,9 @@ public class UDPServer {
         return this;
     }
 
+    /**
+     * Builder class for the server
+     */
     public static class UDPServerBuilder {
         private String host;
         private int port;

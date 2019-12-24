@@ -69,21 +69,9 @@ public class UDPClient {
         return workerGroup;
     }
 
-    private UDPClient setHost(String host) {
-        this.host = host;
-        return this;
-    }
-
-    private UDPClient setPort(int port) {
-        this.port = port;
-        return this;
-    }
-
-    private UDPClient setUsername(String username) {
-        this.username = username;
-        return this;
-    }
-
+    /**
+     * Builder class for the client
+     */
     public static class UDPClientBuilder {
         private String host;
         private int port;

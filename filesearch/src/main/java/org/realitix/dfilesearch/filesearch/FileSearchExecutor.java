@@ -46,11 +46,9 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
                 .setPort(fileExecutorConfiguration.getPorts().getPort())
                 .setUsername(fileExecutorConfiguration.getPorts().getUsername())
                 .build();
-        client.messageBootstrapServer
-                (
+        client.messageBootstrapServer(
                     fileExecutorConfiguration.getBootstrapServer().getHost(),
-                    fileExecutorConfiguration.getBootstrapServer().getPort()
-                );
+                    fileExecutorConfiguration.getBootstrapServer().getPort());
     }
 
     @Path("/file")
@@ -75,6 +73,5 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
             logger.info("File synthesizing completed.");
             return fileResponse;
         }
-
     }
 }

@@ -8,8 +8,6 @@ import io.netty.util.CharsetUtil;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
-import java.util.Arrays;
-
 /**
  * Handler for Client.
  * Read the docs: https://netty.io/wiki/new-and-noteworthy-in-4.0.html#wiki-h4-19
@@ -28,7 +26,7 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
         String message = datagramPacket.content().toString(CharsetUtil.UTF_8);
         logger.info("Response message: " + message);
         processResponse(message);
-        channelHandlerContext.channel().close();
+        channelHandlerContext.close();
     }
 
     @Override
@@ -43,10 +41,15 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
 
     private void processResponse(String string) {
         String[] splitResponse = string.split(" ");
-        if (splitResponse[1].equals("REGOK")) {
-            logger.info("ACK for REG received.");
-        } else {
-            logger.error("Undetermined response from the server.");
+        switch (splitResponse[1]) {
+            case "REGOK":
+                logger.info("ACK for REG received.");
+                break;
+            case "UNROK":
+                logger.info("Response FOR UNROK received.");
+                break;
+            default:
+                logger.error("Undetermined response from the server.");
         }
     }
 

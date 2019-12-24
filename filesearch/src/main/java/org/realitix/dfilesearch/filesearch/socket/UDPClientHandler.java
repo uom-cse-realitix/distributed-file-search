@@ -20,7 +20,7 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
     private static Logger logger = LogManager.getLogger(UDPClientHandler.class);
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+    public void channelActive(ChannelHandlerContext ctx) {
         logger.info("Channel Active!");
     }
 

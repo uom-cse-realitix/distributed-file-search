@@ -22,7 +22,7 @@ A distributed methodology to search files in a system.
  
 The above message shows that the bootstrap server has sent the `REGOK` along with the IPs and ports of the currently registered nodes when a third node has requested `REG`.
 
-Note that if two or more nodes have been already registered, the incoming nodes after that will be responded by **only two** nodes.
+Note that if two or more nodes have already been registered, the incoming nodes after that will be responded by **only two** nodes.
 
 ```
 INFO  [2019-12-25 03:10:59,490] org.realitix.dfilesearch.filesearch.socket.UDPClientHandler: Response message: 0042 REGOK 2 127.0.0.1 5003 127.0.0.1 5001

@@ -30,11 +30,12 @@ public class UDPClient {
 
     /**
      * Runs the client socket
+     * Registers the node with BS
      * @param bootstrapIp server host IP
      * @param bootstrapPort server port
      * host and port should be configured in the jar.
      */
-    public void messageBootstrapServer(String bootstrapIp, int bootstrapPort) {
+    public void register(String bootstrapIp, int bootstrapPort) {
         Channel channel;
         Bootstrap b = new Bootstrap();
         b.group(getWorkerGroup())
@@ -62,7 +63,8 @@ public class UDPClient {
      * @throws InterruptedException
      */
     private void write(Channel channel, CommonMessage message, String bootstrapIp, int bootstrapPort) throws InterruptedException {
-       channel.writeAndFlush(new DatagramPacket(Unpooled.copiedBuffer(message.toString(), CharsetUtil.UTF_8), SocketUtils.socketAddress(bootstrapIp, bootstrapPort))).sync().await();
+       channel.writeAndFlush(new DatagramPacket(Unpooled.copiedBuffer(message.toString(), CharsetUtil.UTF_8),
+               SocketUtils.socketAddress(bootstrapIp, bootstrapPort))).sync().await();
     }
 
     private EventLoopGroup getWorkerGroup() {

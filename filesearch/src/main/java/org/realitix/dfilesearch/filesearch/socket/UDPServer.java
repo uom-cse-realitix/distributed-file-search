@@ -1,19 +1,19 @@
 package org.realitix.dfilesearch.filesearch.socket;
 
 import io.netty.bootstrap.Bootstrap;
-import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
+import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 /**
  * Runs a UDP server at port specified in the constructor.
  */
 public class UDPServer {
-    private final Logger logger = Logger.getLogger(UDPServer.class);
+    private final Logger logger = LogManager.getLogger(UDPServer.class);
     private String host;
     private int port;
 

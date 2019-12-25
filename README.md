@@ -95,3 +95,141 @@ bootstrapServer:           # bootstrap server details
     * Trivial File Transfer Protocol (TFTP)
 
 5. <u>Testing the project locally should be done giving the IP `127.0.0.1`.</u> We cannot test giving another IP in the configuration file, since the UDP sockets are bound for those particular ports.
+
+## FAQ
+
+1. Why use a separate logger, such as `Log4j`?
+
+    *  `System.out.println` buffers the input and synchronizes its contents. Furthermore, it switches between user level and kernel level to write to the console, therefore increasing the overhead. Therefore, an application-level logger is used in most industrial applications ([Source](https://javapapers.com/core-java/system-out-println/)).
+    
+2. Why a separate `webservice` module?
+
+    * The question is divided into three phases. The third explicitly asks us to develop a web service. In this modular approach, the web service is a cohesive `.jar` which can be deployed in the same machine as the node. 
+    
+    * However, for simplicity, I have used `jetty` in `DropWizard` to spin up an HTTP server to instantiate the web service _inside_ `filesearch` module itself. This approach is **not modular** but simple. The resource class is given below.
+    
+     ```java
+     @Path("/file")
+        @Produces(MediaType.APPLICATION_JSON)
+        public static class FileSharingResource {
+    
+            private final Logger logger = LogManager.getLogger(this.getClass());
+    
+            @GET
+            @Path("{fileName}")
+            public Response getFile(@PathParam("fileName") String fileName) {
+                return Response.status(200).entity(synthesizeFile(fileName)).build();
+            }
+    
+            private FileResponse synthesizeFile(String fileName){
+                logger.info("Synthesizing the file");
+                String randomString = fileName + RandomStringUtils.randomAlphabetic(20).toUpperCase();
+                int size = (int) ((Math.random() * ((10 - 2) + 1)) + 2);    // change this to a more random algorithm
+                FileResponse fileResponse = new FileResponse();
+                fileResponse.setFileSize(size);
+                fileResponse.setHash(DigestUtils.sha1Hex(randomString));
+                logger.info("File synthesizing completed.");
+                return fileResponse;
+            }
+        }
+    ```
+    
+3. How does the `JOIN` has to happen?
+
+    * After initial communication between the `BootstrapServer` (BS), the establishment of the network is done.
+    
+    * Afterwards, we have to communicate with the neighbours returned by the BS. 
+    
+    * For this, we need a UDP server listening in each node, which is modeled in `UDPServer.java` itself. Inside `UDPServerHandler` the `channelRead0` event should handle `JOIN` and other requests appropriately.
+    ```java
+    public class UDPServer {
+        private final Logger logger = LogManager.getLogger(UDPServer.class);
+        private String host;
+        private int port;
+    
+        private UDPServer(UDPServerBuilder builder) {
+            this.host = builder.host;
+            this.port = builder.port;
+        }
+    
+        /**
+         * Note: https://stackoverflow.com/questions/41505852/netty-closefuture-sync-channel-blocks-rest-api
+         * ServerBootstrap allows many client to connect via its channel. Therefore TCP has a dedicated ServerSocketChannel.
+         * Bootstrap is used to create channels for single connections. Because UDP has one channel for all clients it makes sense that only the Bootstrap is required. All clients bind to the same channel.
+         * @return the udp server
+         */
+        public Channel listen() {
+            Channel channel = null;
+            EventLoopGroup group = new NioEventLoopGroup();
+            Bootstrap b = new Bootstrap();
+            b.group(group)
+                    .channel(NioDatagramChannel.class)
+                    .option(ChannelOption.SO_BROADCAST, true)
+                    .handler(new UDPServerHandler());
+            try {
+                channel = b.bind(host, port).sync().channel(); // .sync().channel().closeFuture.await()
+                logger.info("WS UDP server listening to port: " + port);
+            } catch (InterruptedException e) {
+                logger.error(e.getMessage());
+            }
+            return channel;
+        }
+    
+        /**
+         * Builder class for the server
+         */
+        public static class UDPServerBuilder {
+            private String host;
+            private int port;
+    
+            private UDPServerBuilder() {}
+    
+            public static UDPServerBuilder newInstance() {
+                return new UDPServerBuilder();
+            }
+    
+            public UDPServerBuilder setHost(String host) {
+                this.host = host;
+                return this;
+            }
+    
+            public UDPServerBuilder setPort(int port) {
+                this.port = port;
+                return this;
+            }
+    
+            public UDPServer build() {
+                return new UDPServer(this);
+            }
+        }
+    }
+    ```    
+4. Why a `configuration.yaml`? Can't we just hardcode the information?
+
+    * Having a serializable `.yaml` is the standard way of coding a component.
+    
+    * Generally, each component (built as a `.jar`) is deployed alongwith this `.yaml`.
+    
+    * This way, we don't have to reach into the code-level (and we can have the freedom of not having the code repository cloned in each node's file system) to alter the information (since we fetch them from `.yaml`).
+    
+5. Why `Netty`?
+
+    * Many organizations now use `Netty` to establish their networking infrastructure. `WSO2`, `ElasticSearch` (`Solr` successor), and plenty of others use it.
+    
+    * Its event-driven architecture mixed with interceptor pattern handlers gives cohesion to the code and much needed functionalities.
+      <div align="center"> 
+        <img src="https://netty.io/images/components.png" />
+      </div>
+     
+    
+
+
+
+
+    
+   
+    
+
+ 
+
+    

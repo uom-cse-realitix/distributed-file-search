@@ -42,36 +42,31 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
     @Override
     public void run(FileExecutorConfiguration fileExecutorConfiguration, Environment environment) {
         BasicConfigurator.configure();
-        registerBackendClient(environment, fileExecutorConfiguration);
-        startWebService(environment, fileExecutorConfiguration);
-        startUdpServer(environment, fileExecutorConfiguration);
+        registerBackendClient(fileExecutorConfiguration);
+        startWebService(environment);
+        startUdpServer(fileExecutorConfiguration);
     }
 
-    private void startWebService(Environment environment, FileExecutorConfiguration configuration) {
+    private void startWebService(Environment environment) {
         logger.info("Enabling Web Service..");
         environment.jersey().register(new FileSharingResource());
     }
 
-    private Channel startUdpServer(Environment environment, FileExecutorConfiguration configuration) {
-        UDPServer server = UDPServer.UDPServerBuilder
-                .newInstance()
+    private Channel startUdpServer(FileExecutorConfiguration configuration) {
+        UDPServer server = UDPServer.UDPServerBuilder.newInstance()
                 .setHost(configuration.getUdpServer().getHost())
                 .setPort(configuration.getUdpServer().getPort())
                 .build();
-        final Channel channel = server.listen();
-        return channel;
+        return server.listen();
     }
 
-    private UDPClient registerBackendClient(Environment environment, FileExecutorConfiguration configuration) {
-        UDPClient client = UDPClient.UDPClientBuilder
-                .newInstance()
+    private UDPClient registerBackendClient(FileExecutorConfiguration configuration) {
+        UDPClient client = UDPClient.UDPClientBuilder.newInstance()
                 .setHost(configuration.getPorts().getHost())
                 .setPort(configuration.getPorts().getPort())
                 .setUsername(configuration.getPorts().getUsername())
                 .build();
-        client.messageBootstrapServer(
-                configuration.getBootstrapServer().getHost(),
-                configuration.getBootstrapServer().getPort());
+        client.register(configuration.getBootstrapServer().getHost(), configuration.getBootstrapServer().getPort());
         return client;
     }
 

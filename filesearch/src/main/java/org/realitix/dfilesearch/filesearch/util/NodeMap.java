@@ -6,10 +6,10 @@ import java.util.HashMap;
 
 public class NodeMap {
 
-    private HashMap<Integer, Node> nodeMap = new HashMap<Integer, Node>();
+    private HashMap<Integer, Node> nodeMap = new HashMap<>();
 
-    public NodeMap insertNode(Node node) {
-        // Insert node
+    public NodeMap insertNode(Node node, int id) {
+        nodeMap.put(id, node);
         return this;
     }
 

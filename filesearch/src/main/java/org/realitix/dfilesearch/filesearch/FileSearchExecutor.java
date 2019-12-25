@@ -25,7 +25,7 @@ import javax.ws.rs.core.Response;
 
 public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
 
-    public static NodeMap nodeMap = new NodeMap();
+    public static NodeMap neighbourMap = new NodeMap();
     private static final Logger logger = LogManager.getLogger(FileSearchExecutor.class);
 
     public static void main(String[] args) throws Exception {

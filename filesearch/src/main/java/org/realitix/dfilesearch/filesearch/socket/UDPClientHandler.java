@@ -7,6 +7,8 @@ import io.netty.channel.socket.DatagramPacket;
 import io.netty.util.CharsetUtil;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.realitix.dfilesearch.filesearch.util.ResponseParser;
+import org.realitix.dfilesearch.filesearch.util.ResponseParserImpl;
 
 /**
  * Handler for Client.
@@ -16,6 +18,7 @@ import org.apache.log4j.Logger;
 public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket> {
 
     private static Logger logger = LogManager.getLogger(UDPClientHandler.class);
+    private static final ResponseParser<String> responseParser = new ResponseParserImpl();
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
@@ -40,17 +43,7 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
     }
 
     private void processResponse(String string) {
-        String[] splitResponse = string.split(" ");
-        switch (splitResponse[1]) {
-            case "REGOK":
-                logger.info("ACK for REG received.");
-                break;
-            case "UNROK":
-                logger.info("Response FOR UNROK received.");
-                break;
-            default:
-                logger.error("Undetermined response from the server.");
-        }
+        responseParser.parse(string.split(" ")[1]);
     }
 
 }

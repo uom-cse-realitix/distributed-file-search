@@ -43,7 +43,7 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
     }
 
     private void processResponse(String string) {
-        responseParser.parse(string.split(" ")[1]);
+        responseParser.parse(string);
     }
 
 }

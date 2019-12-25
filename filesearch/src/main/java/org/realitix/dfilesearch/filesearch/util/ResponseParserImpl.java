@@ -12,7 +12,7 @@ public class ResponseParserImpl implements ResponseParser<String>{
 
     @Override
     public void parse(String s) {
-        switch (s) {
+        switch (s.split(" ")[1]) {
             case "REGOK":
                 logger.info("ACK for REG received.");
                 parseRegok(s);
@@ -40,8 +40,8 @@ public class ResponseParserImpl implements ResponseParser<String>{
                     .insertNode(new Node(ips[3], Integer.parseInt(ips[4])), 1)
                     .insertNode(new Node(ips[5], Integer.parseInt(ips[6])), 2);
             logger.info("Node: [" + FileSearchExecutor.neighbourMap.getNodeMap().get(1).getIp() + ":"
-                    + FileSearchExecutor.neighbourMap.getNodeMap().get(1).getPort() + " and " + FileSearchExecutor.neighbourMap.getNodeMap().get(1).getIp() + ":"
-                    + FileSearchExecutor.neighbourMap.getNodeMap().get(1).getPort()+ "] is added to the node map.");
+                    + FileSearchExecutor.neighbourMap.getNodeMap().get(1).getPort() + " and " + FileSearchExecutor.neighbourMap.getNodeMap().get(2).getIp() + ":"
+                    + FileSearchExecutor.neighbourMap.getNodeMap().get(2).getPort()+ "] is added to the node map.");
         }
 
     }

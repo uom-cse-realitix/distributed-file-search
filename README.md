@@ -37,7 +37,7 @@ First, we need to set up the commandline arguments.
     <img src="docs/conf.png" />
 </div>
 
-3. Spin up a `BootstrapServer` instance first. Then, run `FileServer` changing the configuration in `configuration.yaml` **in the root directory** of the project (i.e. `/dfilesearch` directory). Try to spin more than `FileServer` nodes up, and observe the BootstrapServer console and consoles of each node (pay attention to console outputs. The response messages are logged. Check for the log message below for an instance)  by registering multiple nodes.
+3. Spin up a `BootstrapServer` instance first. Then, run `FileServer` changing the configuration in `configuration.yaml` **in the root directory** of the project (i.e. `/dfilesearch` directory). Try to spin more than 3 `FileServer` nodes up, and observe the BootstrapServer console and consoles of each node (pay attention to console outputs. The response messages are logged. Check for the log message below for an instance)  by registering multiple nodes.
 
 ```
 13:10:22.546 [nioEventLoopGroup-2-1] INFO org.realitix.dfilesearch.filesearch.socket.UDPClientHandler - Response message: 0042 REGOK 2 127.0.0.1 5001 127.0.0.1 5002

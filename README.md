@@ -50,6 +50,18 @@ bootstrapServer:           # bootstrap server details
   host: 127.0.0.1
 ```
 
+## Setting up in IntelliJ and running within Jetbrains environments
+
+First, we need to set up the commandline arguments. 
+
+1. Open `Run | Edit Configurations`, and tick `Allow Parallel Run` (for spawning a unique IDEA thread for each execution)
+2. Add `server` and `configuration.yaml` as commandline arguments.
+
+3. Run changing the configuration in `configuration.yaml` **in the root directory** of the project (i.e. `/dfilesearch` directory)
+
+<div align="center">
+    <img src="docs/conf.png" />
+</div>
 
 ### Netstat commands
 

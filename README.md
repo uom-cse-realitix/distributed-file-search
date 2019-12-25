@@ -12,7 +12,7 @@ A distributed methodology to search files in a system.
 
 1. Run `bootstrapserver-1.0-SNAPSHOT.jar` using `java -jar bootstrapserver-1.0-SNAPSHOT.jar`.
 2. Provide the configurations to the `configuration.yaml`.
-3. Build `filesearch` module using `mvn clean install -DskipTests`. Note that I've included a plugin which copies an instance of `configuration.yaml` to `filesearch/target`.
+3. Build the project using `mvn clean install -DskipTests`. Note that I've included a plugin which copies an instance of `configuration.yaml` to `filesearch/target`.
 3. Run the `.jar` file generated in `filesearch/target` using `java -jar filesearch-1.0-SNAPSHOT.jar server configuration.yaml`. To run multiple instances, simply change the ports (specially the HTTP port specified as `server`) in `configuration.yaml`.
 4. Observe the BootstrapServer console and consoles of each node (pay attention to console outputs. The response messages are logged. Check for the log message below for an instance)  by registering multiple nodes.
  
@@ -21,6 +21,14 @@ A distributed methodology to search files in a system.
 ```
  
 The above message shows that the bootstrap server has sent the `REGOK` along with the IPs and ports of the currently registered nodes when a third node has requested `REG`.
+
+Note that if two or more nodes have been already registered, the incoming nodes after that will be responded by **only two** nodes.
+
+```
+INFO  [2019-12-25 03:10:59,490] org.realitix.dfilesearch.filesearch.socket.UDPClientHandler: Response message: 0042 REGOK 2 127.0.0.1 5003 127.0.0.1 5001
+```
+
+This is the nature of the overlay network. The two nodes which are responded by the bootstrap server are the neighbors for the incoming node.
 
 `configuration.yaml` file is shown below.
 

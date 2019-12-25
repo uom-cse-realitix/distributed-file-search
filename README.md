@@ -8,24 +8,6 @@ A distributed methodology to search files in a system.
 * Phase 2: Design & Develop a socket-based solution to find files requested by different nodes.
 * Phase 3: Web service (REST API) to support file transfer.
 
-@startuml
-
-node BootstrapServer
-node node2
-node node3
-node node4
-node node5
-node1 -- node2 : label1
-node1 -- node3 : label2
-node1 -- node4 : label3
-node1 -- node5
-node2 -- node3
-node3 -- node4
-node4 -- node5
-node2 -- node5
-
-@enduml
-
 ## Setting up in IntelliJ and running within Jetbrains environments
 
 First, we need to set up the commandline arguments. 

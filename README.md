@@ -8,14 +8,19 @@ A distributed methodology to search files in a system.
 * Phase 2: Design & Develop a socket-based solution to find files requested by different nodes.
 * Phase 3: Web service (REST API) to support file transfer.
 
-## Progress
+## Setting up in IntelliJ and running within Jetbrains environments
 
-1. Run `bootstrapserver-1.0-SNAPSHOT.jar` using `java -jar bootstrapserver-1.0-SNAPSHOT.jar`.
-2. Provide the configurations to the `configuration.yaml`.
-3. Build the project using `mvn clean install -DskipTests`. Note that I've included a plugin which copies an instance of `configuration.yaml` to `filesearch/target`.
-3. Run the `.jar` file generated in `filesearch/target` using `java -jar filesearch-1.0-SNAPSHOT.jar server configuration.yaml`. To run multiple instances, simply change the ports (specially the HTTP port specified as `server`) in `configuration.yaml`.
-4. Observe the BootstrapServer console and consoles of each node (pay attention to console outputs. The response messages are logged. Check for the log message below for an instance)  by registering multiple nodes.
- 
+First, we need to set up the commandline arguments. 
+
+1. Open `Run | Edit Configurations`, and tick `Allow Parallel Run` (for spawning a unique IDEA thread for each execution)
+2. Add `server` and `configuration.yaml` as commandline arguments.
+
+3. Run changing the configuration in `configuration.yaml` **in the root directory** of the project (i.e. `/dfilesearch` directory)
+
+<div align="center">
+    <img src="docs/conf.png" />
+</div>
+
 ```
 13:10:22.546 [nioEventLoopGroup-2-1] INFO org.realitix.dfilesearch.filesearch.socket.UDPClientHandler - Response message: 0042 REGOK 2 127.0.0.1 5001 127.0.0.1 5002
 ```
@@ -28,7 +33,16 @@ Note that if two or more nodes have already been registered, the incoming nodes 
 INFO  [2019-12-25 03:10:59,490] org.realitix.dfilesearch.filesearch.socket.UDPClientHandler: Response message: 0042 REGOK 2 127.0.0.1 5003 127.0.0.1 5001
 ```
 
-This is the nature of the overlay network. The two nodes which are responded by the bootstrap server are the neighbors for the incoming node.
+This is the nature of the overlay network. The details of the two nodes responded by the bootstrap server are the neighbors to the incoming node.
+
+
+## Running in independent nodes
+
+1. Run `bootstrapserver-1.0-SNAPSHOT.jar` using `java -jar bootstrapserver-1.0-SNAPSHOT.jar`.
+2. Provide the configurations to the `configuration.yaml`.
+3. Build the project using `mvn clean install -DskipTests`. Note that I've included a plugin which copies an instance of `configuration.yaml` to `filesearch/target`.
+3. Run the `.jar` file generated in `filesearch/target` using `java -jar filesearch-1.0-SNAPSHOT.jar server configuration.yaml`. To run multiple instances, simply change the ports (specially the HTTP port specified as `server`) in `configuration.yaml`.
+4. Observe the BootstrapServer console and consoles of each node (pay attention to console outputs. The response messages are logged. Check for the log message below for an instance)  by registering multiple nodes.
 
 `configuration.yaml` file is shown below.
 
@@ -49,19 +63,6 @@ bootstrapServer:           # bootstrap server details
   port: 55555
   host: 127.0.0.1
 ```
-
-## Setting up in IntelliJ and running within Jetbrains environments
-
-First, we need to set up the commandline arguments. 
-
-1. Open `Run | Edit Configurations`, and tick `Allow Parallel Run` (for spawning a unique IDEA thread for each execution)
-2. Add `server` and `configuration.yaml` as commandline arguments.
-
-3. Run changing the configuration in `configuration.yaml` **in the root directory** of the project (i.e. `/dfilesearch` directory)
-
-<div align="center">
-    <img src="docs/conf.png" />
-</div>
 
 ### Netstat commands
 

@@ -80,3 +80,5 @@ bootstrapServer:           # bootstrap server details
     * Domain Name System (DNS)
     * Voice over Internet Protocol (VoIP)
     * Trivial File Transfer Protocol (TFTP)
+
+5. <u>Testing the project locally should be done giving the IP `127.0.0.1`.</u> We cannot test giving another IP in the configuration file, since the UDP sockets are bound for those particular ports.

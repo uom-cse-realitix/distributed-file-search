@@ -29,7 +29,6 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
         String message = datagramPacket.content().toString(CharsetUtil.UTF_8);
         logger.info("Response message: " + message);
         processResponse(message);
-        channelHandlerContext.close();
     }
 
     @Override

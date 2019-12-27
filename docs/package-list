@@ -1,0 +1,10 @@
+org.realitix.dfilesearch.bootstrapserver
+org.realitix.dfilesearch.filesearch
+org.realitix.dfilesearch.filesearch.beans
+org.realitix.dfilesearch.filesearch.beans.messages
+org.realitix.dfilesearch.filesearch.configuration
+org.realitix.dfilesearch.filesearch.exception
+org.realitix.dfilesearch.filesearch.socket
+org.realitix.dfilesearch.filesearch.util
+org.realitix.dfilesearch.webservice
+org.realitix.dfilesearch.webservice.beans

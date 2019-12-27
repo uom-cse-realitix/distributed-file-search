@@ -14,7 +14,6 @@ import org.realitix.dfilesearch.filesearch.socket.UDPClient;
 import org.realitix.dfilesearch.filesearch.socket.UDPServer;
 import org.realitix.dfilesearch.filesearch.util.NodeMap;
 import org.realitix.dfilesearch.webservice.beans.FileResponse;
-import org.springframework.boot.autoconfigure.couchbase.CouchbaseProperties;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -25,7 +24,7 @@ import javax.ws.rs.core.Response;
 
 public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
 
-    public static NodeMap neighbourMap = new NodeMap();
+    public static final NodeMap neighbourMap = new NodeMap();
     private static final Logger logger = LogManager.getLogger(FileSearchExecutor.class);
 
     public static void main(String[] args) throws Exception {

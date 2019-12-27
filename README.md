@@ -31,7 +31,40 @@ First, we need to set up the commandline arguments.
  
 The above message shows that the bootstrap server has sent the `REGOK` along with the IPs and ports of the currently registered nodes when a third node has requested `REG`.
 
-Note that if two or more nodes have already been registered, the incoming nodes after that will be responded by nodes which are connected to the BS. **However, we should connect only to two randomly selected nodes**.
+Note that if two or more nodes have already been registered, the incoming nodes after that will be responded by nodes which are connected to the BS. **The passage in the assignment says that, we should connect only to two randomly selected nodes**. But take a look at this code extracted out from the `BootstrapServer` they've issued.
+
+```java
+class BootstrapServer {
+    public static void main(String[] args){
+      // ......
+        if (isOkay) {
+            if (nodes.size() == 1) {
+                reply += "1 " + nodes.get(0).getIp() + " " + nodes.get(0).getPort();
+            } else if (nodes.size() == 2) {
+                reply += "2 " + nodes.get(0).getIp() + " " + nodes.get(0).getPort() + " " + nodes.get(1).getIp() + " " + nodes.get(1).getPort();
+            } else {
+                Random r = new Random();
+                int Low = 0;
+                int High = nodes.size();
+                int random_1 = r.nextInt(High-Low) + Low;
+                int random_2 = r.nextInt(High-Low) + Low;
+                while (random_1 == random_2) {
+                    random_2 = r.nextInt(High-Low) + Low;
+                }
+                echo (random_1 + " " + random_2);
+                reply += "2 " + nodes.get(random_1).getIp() + " " + nodes.get(random_1).getPort() + " " + nodes.get(random_2).getIp() + " " + nodes.get(random_2).getPort();
+            }
+            nodes.add(new Neighbour(ip, port, username));
+        }
+    // .....
+    }
+}
+```
+
+The `BootstrapServer` already performs the randomization of the nodes and provide us with **two random nodes**. Therefore, regardless of how many nodes you register in the `BootstrapServer` for the `REG` query you get two nodes, who are supposed to be the neighbors of that particular node. 
+
+
+Consider the log message given below.
 
 ```
 INFO  [2019-12-25 03:10:59,490] org.realitix.dfilesearch.filesearch.socket.UDPClientHandler: Response message: 0042 REGOK 2 127.0.0.1 5003 127.0.0.1 5001
@@ -99,6 +132,10 @@ bootstrapServer:           # bootstrap server details
     * Trivial File Transfer Protocol (TFTP)
 
 5. <u>Testing the project locally should be done giving the IP `127.0.0.1`.</u> We cannot test giving another IP in the configuration file, since the UDP sockets are bound for those particular ports.
+
+## TODOs
+
+Updated TODOs can be found in [this link](https://github.com/uom-cse-realitix/distributed-file-search/projects/1), in a Kanban board.
 
 ## FAQ
 

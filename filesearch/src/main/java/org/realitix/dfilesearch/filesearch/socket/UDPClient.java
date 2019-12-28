@@ -10,7 +10,9 @@ import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.util.CharsetUtil;
 import io.netty.util.internal.SocketUtils;
 import org.apache.log4j.Logger;
+import org.realitix.dfilesearch.filesearch.beans.Node;
 import org.realitix.dfilesearch.filesearch.beans.messages.CommonMessage;
+import org.realitix.dfilesearch.filesearch.beans.messages.JoinRequest;
 import org.realitix.dfilesearch.filesearch.beans.messages.RegisterRequest;
 
 public class UDPClient {
@@ -52,6 +54,30 @@ public class UDPClient {
         } catch (InterruptedException e) {
             logger.error(e.getMessage());
         }
+    }
+
+    /**
+     * Sends the JOIN request to the neighbors
+     * @param neighbour1 first neighbour
+     * @param neighbour2 second neighbour
+     * @param channel client channel open for communication with other components.
+     * @throws InterruptedException
+     */
+    private void join(Node neighbour1, Node neighbour2, Channel channel) throws InterruptedException {
+        write(
+                channel,
+                new JoinRequest(neighbour1.getIp(),
+                        neighbour1.getPort()),
+                neighbour1.getIp(),
+                neighbour1.getPort()
+        );
+        write(
+                channel,
+                new JoinRequest(neighbour2.getIp(),
+                        neighbour2.getPort()),
+                neighbour2.getIp(),
+                neighbour2.getPort()
+        );
     }
 
     /**

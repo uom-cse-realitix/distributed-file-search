@@ -1,16 +1,15 @@
 package org.realitix.dfilesearch.filesearch.beans.messages;
 
-public class RegisterRequest implements CommonMessage {
+public class JoinRequest implements CommonMessage {
 
     private String length;
+    private final String key = "JOIN";
     private String ip;
     private int port;
-    private String username;
 
-    public RegisterRequest(String ip, int port, String username) {
+    public JoinRequest(String ip, int port) {
         this.ip = ip;
         this.port = port;
-        this.username = username;
     }
 
     public String getLength() {
@@ -19,6 +18,10 @@ public class RegisterRequest implements CommonMessage {
 
     public void setLength(String length) {
         this.length = length;
+    }
+
+    public String getKey() {
+        return key;
     }
 
     public String getIp() {
@@ -37,27 +40,18 @@ public class RegisterRequest implements CommonMessage {
         this.port = port;
     }
 
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
     /**
      * 4 initial digits to represent length
-     * 4 spaces
-     * 3 for REG
+     * 3 spaces
+     * 4 for JOIN
      * @return length of the message
      */
     private int calculateLength() {
-        return 4 + 4 + 3 + ip.length() + String.valueOf(port).length() + username.length();
+        return 4 + 3 + 4 + ip.length() + String.valueOf(port).length();
     }
 
     @Override
     public String toString() {
-        String key = "REG";
-        return "00" + calculateLength() + " " + key + " " + ip + " " + port + " " + username;
+        return "00" + calculateLength() + " " + key + " " + ip + " " + port;
     }
 }

@@ -29,19 +29,13 @@ public class FileResponse {
         private String hash;
         private int fileSize;
 
-        public String getHash() {
-            return hash;
-        }
+        private FileResponseBuilder() {}
 
         public static FileResponseBuilder newInstance() {return new FileResponseBuilder();}
 
         public FileResponseBuilder setHash(String hash) {
             this.hash = hash;
             return this;
-        }
-
-        public int getFileSize() {
-            return fileSize;
         }
 
         public FileResponseBuilder setFileSize(int fileSize) {

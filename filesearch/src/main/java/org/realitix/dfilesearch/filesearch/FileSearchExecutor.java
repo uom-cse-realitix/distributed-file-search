@@ -86,6 +86,10 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
         }
     }
 
+    /**************
+     * Web Service
+     *************
+     */
     @Path("/file")
     @Produces(MediaType.APPLICATION_JSON)
     public static class FileSharingResource {

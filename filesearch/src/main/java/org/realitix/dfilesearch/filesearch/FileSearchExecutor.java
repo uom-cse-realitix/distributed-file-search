@@ -65,7 +65,11 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
                 .setPort(configuration.getPorts().getPort())
                 .setUsername(configuration.getPorts().getUsername())
                 .build();
-        client.register(configuration.getBootstrapServer().getHost(), configuration.getBootstrapServer().getPort());
+        try {
+            client.register(configuration.getBootstrapServer().getHost(), configuration.getBootstrapServer().getPort());
+        } catch (InterruptedException e) {
+            logger.error(e.getMessage());
+        }
         return client;
     }
 

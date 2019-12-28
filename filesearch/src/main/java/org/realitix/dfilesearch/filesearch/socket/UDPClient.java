@@ -15,6 +15,8 @@ import org.realitix.dfilesearch.filesearch.beans.messages.CommonMessage;
 import org.realitix.dfilesearch.filesearch.beans.messages.JoinRequest;
 import org.realitix.dfilesearch.filesearch.beans.messages.RegisterRequest;
 
+import java.net.InetSocketAddress;
+
 public class UDPClient {
 
     private String host;
@@ -30,27 +32,29 @@ public class UDPClient {
         this.workerGroup = new NioEventLoopGroup();
     }
 
+    public Channel createChannel(String remoteIp, int remotePort, ChannelInitializer<DatagramChannel> channelInitializer) throws InterruptedException {
+        Bootstrap b = new Bootstrap();
+        b.group(new NioEventLoopGroup())
+                .channel(NioDatagramChannel.class)
+                .option(ChannelOption.SO_KEEPALIVE, true)
+                .remoteAddress(remoteIp, remotePort)
+                .handler(channelInitializer);
+        return b.connect().channel().bind(SocketUtils.socketAddress(host, port)).sync().await().channel();
+    }
+
     /**
      * Runs the client socket
      * Registers the node with BS
+     * Method connect() connects to a remote server and bind() binds the process to a local socket
      * @param bootstrapIp server host IP
      * @param bootstrapPort server port
      * host and port should be configured in the jar.
      */
-    public void register(String bootstrapIp, int bootstrapPort) {
-        Channel channel;
-        Bootstrap b = new Bootstrap();
-        b.group(getWorkerGroup())
-                .channel(NioDatagramChannel.class)
-                .option(ChannelOption.SO_KEEPALIVE, true)
-                .handler(new ChannelInitializer<DatagramChannel>() {
-                    protected void initChannel(DatagramChannel datagramChannel) throws Exception {
-                        datagramChannel.pipeline().addLast(new UDPClientHandler());
-                    }
-                });
+    public void register(String bootstrapIp, int bootstrapPort) throws InterruptedException {
+        Channel channel = createChannel(bootstrapIp, bootstrapPort, new UDPClientInitializer());
         try {
-            channel = b.bind(this.host, this.port).sync().await().channel();
-            write(channel, (new RegisterRequest(host, port, username)), bootstrapIp, bootstrapPort);
+            InetSocketAddress localAddress = (InetSocketAddress) channel.localAddress();
+            write(channel, (new RegisterRequest(localAddress.getHostString(), localAddress.getPort(), username)), bootstrapIp, bootstrapPort);
         } catch (InterruptedException e) {
             logger.error(e.getMessage());
         }
@@ -60,37 +64,27 @@ public class UDPClient {
      * Sends the JOIN request to the neighbors
      * @param neighbour1 first neighbour
      * @param neighbour2 second neighbour
-     * @param channel client channel open for communication with other components.
      * @throws InterruptedException
      */
-    private void join(Node neighbour1, Node neighbour2, Channel channel) throws InterruptedException {
-        write(
-                channel,
-                new JoinRequest(neighbour1.getIp(),
-                        neighbour1.getPort()),
-                neighbour1.getIp(),
-                neighbour1.getPort()
-        );
-        write(
-                channel,
-                new JoinRequest(neighbour2.getIp(),
-                        neighbour2.getPort()),
-                neighbour2.getIp(),
-                neighbour2.getPort()
-        );
+    private void join(Node neighbour1, Node neighbour2) throws InterruptedException {
+        UDPJoinInitializer initializer = new UDPJoinInitializer();
+        neighbour1.setChannel(createChannel(neighbour1.getIp(), neighbour1.getPort(), initializer));
+        neighbour2.setChannel(createChannel(neighbour2.getIp(), neighbour2.getPort(), initializer));
+        write(neighbour1.getChannel(), new JoinRequest(host, port), neighbour1.getIp(), neighbour1.getPort());
+        write(neighbour2.getChannel(), new JoinRequest(host, port), neighbour2.getIp(), neighbour2.getPort());
     }
 
     /**
      * Write different messages
      * @param channel channel between the client and server
      * @param message transmitted message
-     * @param bootstrapIp IP of bootstrap server
-     * @param bootstrapPort IP of bootstrap server
+     * @param remoteIp IP of bootstrap server
+     * @param remotePort IP of bootstrap server
      * @throws InterruptedException
      */
-    private void write(Channel channel, CommonMessage message, String bootstrapIp, int bootstrapPort) throws InterruptedException {
+    private void write(Channel channel, CommonMessage message, String remoteIp, int remotePort) throws InterruptedException {
        channel.writeAndFlush(new DatagramPacket(Unpooled.copiedBuffer(message.toString(), CharsetUtil.UTF_8),
-               SocketUtils.socketAddress(bootstrapIp, bootstrapPort))).sync().await();
+               SocketUtils.socketAddress(remoteIp, remotePort))).sync().await();
     }
 
     private EventLoopGroup getWorkerGroup() {

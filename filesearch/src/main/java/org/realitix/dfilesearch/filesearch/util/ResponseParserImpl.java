@@ -42,6 +42,9 @@ public class ResponseParserImpl implements ResponseParser<String>{
             logger.info("Node: [" + FileSearchExecutor.neighbourMap.getNodeMap().get(1).getIp() + ":"
                     + FileSearchExecutor.neighbourMap.getNodeMap().get(1).getPort() + " and " + FileSearchExecutor.neighbourMap.getNodeMap().get(2).getIp() + ":"
                     + FileSearchExecutor.neighbourMap.getNodeMap().get(2).getPort()+ "] is added to the node map.");
+        } else {
+            // in case ips.length < 3
+            logger.info("This is the first node. Response from BS: " + s);
         }
 
     }

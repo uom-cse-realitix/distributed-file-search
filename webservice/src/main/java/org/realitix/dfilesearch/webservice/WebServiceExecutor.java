@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collections;
 
@@ -47,7 +46,7 @@ public class WebServiceExecutor {
     public static class FileController {
         @GetMapping(value = "/{fileName}")
         public FileResponse getFile(@PathVariable("fileName") String fileName) {
-            logger.info("Request for filename: \'" + fileName + "\' arrived." );
+            logger.info("Request for filename: '" + fileName + "' arrived.");
             return synthesizeFile(fileName);
         }
 

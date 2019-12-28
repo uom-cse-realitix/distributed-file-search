@@ -85,7 +85,7 @@ public class UDPClient {
 
         private UDPClientBuilder() {}
 
-        public UDPClientBuilder setHost(String host) {
+        public UDPClientBuilder setHost (String host) {
             this.host = host;
             return this;
         }

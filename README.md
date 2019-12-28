@@ -133,6 +133,39 @@ bootstrapServer:           # bootstrap server details
 
 5. <u>Testing the project locally should be done giving the IP `127.0.0.1`.</u> We cannot test giving another IP in the configuration file, since the UDP sockets are bound for those particular ports.
 
+6. Each `Node` has a `Channel` instance. Upon the `JOIN` query, these channels are initiated.
+
+```java
+public class UDPClient {
+    // code
+ public Channel createChannel(String remoteIp, int remotePort, ChannelInitializer<DatagramChannel> channelInitializer) throws InterruptedException {
+        Bootstrap b = new Bootstrap();
+        b.group(new NioEventLoopGroup())
+                .channel(NioDatagramChannel.class)
+                .option(ChannelOption.SO_KEEPALIVE, true)
+                .remoteAddress(remoteIp, remotePort)
+                .handler(channelInitializer);
+        return b.connect().channel().bind(SocketUtils.socketAddress(host, port)).sync().await().channel();
+    }
+
+    /**
+     * Sends the JOIN request to the neighbors
+     * @param neighbour1 first neighbour
+     * @param neighbour2 second neighbour
+     * @throws InterruptedException
+     */
+    private void join(Node neighbour1, Node neighbour2) throws InterruptedException {
+        UDPJoinInitializer initializer = new UDPJoinInitializer();
+        neighbour1.setChannel(createChannel(neighbour1.getIp(), neighbour1.getPort(), initializer));
+        neighbour2.setChannel(createChannel(neighbour2.getIp(), neighbour2.getPort(), initializer));
+        write(neighbour1.getChannel(), new JoinRequest(host, port), neighbour1.getIp(), neighbour1.getPort());
+        write(neighbour2.getChannel(), new JoinRequest(host, port), neighbour2.getIp(), neighbour2.getPort());
+    }
+
+
+}
+```
+
 ## TODOs
 
 Updated TODOs can be found in [this link](https://github.com/uom-cse-realitix/distributed-file-search/projects/1), in a Kanban board.

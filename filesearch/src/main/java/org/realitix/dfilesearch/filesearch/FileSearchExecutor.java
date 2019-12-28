@@ -102,9 +102,11 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
             logger.info("Synthesizing the file");
             String randomString = fileName + RandomStringUtils.randomAlphabetic(20).toUpperCase();
             int size = (int) ((Math.random() * ((10 - 2) + 1)) + 2);    // change this to a more random algorithm
-            FileResponse fileResponse = new FileResponse();
-            fileResponse.setFileSize(size);
-            fileResponse.setHash(DigestUtils.sha1Hex(randomString));
+            FileResponse fileResponse = FileResponse.FileResponseBuilder
+                    .newInstance()
+                    .setFileSize(size)
+                    .setHash(DigestUtils.sha1Hex(randomString))
+                    .build();
             logger.info("File synthesizing completed.");
             return fileResponse;
         }

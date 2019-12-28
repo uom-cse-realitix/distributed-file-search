@@ -138,15 +138,15 @@ bootstrapServer:           # bootstrap server details
 ```java
 public class UDPClient {
     // code
- public Channel createChannel(String remoteIp, int remotePort, ChannelInitializer<DatagramChannel> channelInitializer) throws InterruptedException {
-        Bootstrap b = new Bootstrap();
-        b.group(new NioEventLoopGroup())
-                .channel(NioDatagramChannel.class)
-                .option(ChannelOption.SO_KEEPALIVE, true)
-                .remoteAddress(remoteIp, remotePort)
-                .handler(channelInitializer);
-        return b.connect().channel().bind(SocketUtils.socketAddress(host, port)).sync().await().channel();
-    }
+     public Channel createChannel(String remoteIp, int remotePort, ChannelInitializer<DatagramChannel> channelInitializer) throws InterruptedException {
+            Bootstrap b = new Bootstrap();
+            b.group(new NioEventLoopGroup())
+                    .channel(NioDatagramChannel.class)
+                    .option(ChannelOption.SO_KEEPALIVE, true)
+                    .remoteAddress(remoteIp, remotePort)
+                    .handler(channelInitializer);
+            return b.connect().channel().bind(SocketUtils.socketAddress(host, port)).sync().await().channel();
+        }
 
     /**
      * Sends the JOIN request to the neighbors
@@ -154,7 +154,7 @@ public class UDPClient {
      * @param neighbour2 second neighbour
      * @throws InterruptedException
      */
-    private void join(Node neighbour1, Node neighbour2) throws InterruptedException {
+    public void join(Node neighbour1, Node neighbour2) throws InterruptedException {
         UDPJoinInitializer initializer = new UDPJoinInitializer();
         neighbour1.setChannel(createChannel(neighbour1.getIp(), neighbour1.getPort(), initializer));
         neighbour2.setChannel(createChannel(neighbour2.getIp(), neighbour2.getPort(), initializer));

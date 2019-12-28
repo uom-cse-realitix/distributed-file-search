@@ -66,12 +66,14 @@ public class UDPClient {
      * @param neighbour2 second neighbour
      * @throws InterruptedException
      */
-    private void join(Node neighbour1, Node neighbour2) throws InterruptedException {
+    public void join(Node neighbour1, Node neighbour2) throws InterruptedException {
         UDPJoinInitializer initializer = new UDPJoinInitializer();
         neighbour1.setChannel(createChannel(neighbour1.getIp(), neighbour1.getPort(), initializer));
-        neighbour2.setChannel(createChannel(neighbour2.getIp(), neighbour2.getPort(), initializer));
         write(neighbour1.getChannel(), new JoinRequest(host, port), neighbour1.getIp(), neighbour1.getPort());
-        write(neighbour2.getChannel(), new JoinRequest(host, port), neighbour2.getIp(), neighbour2.getPort());
+        if (neighbour2 != null) {
+            neighbour2.setChannel(createChannel(neighbour2.getIp(), neighbour2.getPort(), initializer));
+            write(neighbour2.getChannel(), new JoinRequest(host, port), neighbour2.getIp(), neighbour2.getPort());
+        }
     }
 
     /**

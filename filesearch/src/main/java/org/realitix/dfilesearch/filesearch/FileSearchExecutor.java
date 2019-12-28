@@ -73,6 +73,19 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
         return client;
     }
 
+    private void joinBackendClient(UDPClient client) throws InterruptedException {
+        switch (neighbourMap.getNodeMap().size()) {
+            case 1:
+                client.join(neighbourMap.getNodeMap().get(1), null);
+                break;
+            case 2:
+                client.join(neighbourMap.getNodeMap().get(1), neighbourMap.getNodeMap().get(2));
+                break;
+            default:
+                logger.error("Error in the node map.");
+        }
+    }
+
     @Path("/file")
     @Produces(MediaType.APPLICATION_JSON)
     public static class FileSharingResource {

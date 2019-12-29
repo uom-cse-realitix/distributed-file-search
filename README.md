@@ -79,7 +79,7 @@ This is the nature of the overlay network. The details of the two nodes responde
 2. Provide the configurations to the `configuration.yaml`.
 3. Build the project using `mvn clean install -DskipTests`. Note that I've included a plugin which copies an instance of `configuration.yaml` to `filesearch/target`.
 3. Run the `.jar` file generated in `filesearch/target` using `java -jar filesearch-1.0-SNAPSHOT.jar server configuration.yaml`. To run multiple instances, simply change the ports (specially the HTTP port specified as `server`) in `configuration.yaml`.
-4. Observe the BootstrapServer console and consoles of each node (pay attention to console outputs. The response messages are logged. Check for the log message below for an instance)  by registering multiple nodes.
+4. Observe the BootstrapServer console and consoles of each node (pay attention to console outputs. The response messages are logged.
 
 `configuration.yaml` file is shown below.
 
@@ -106,12 +106,13 @@ bootstrapServer:           # bootstrap server details
 * Check for port 9000: `netstat -tulpn | grep 9000
 `
 
-* Send messages to UDP serveer: `echo -n "hello" | nc -4u localhost 9000`
+* Send messages to UDP server: `echo -n "hello" | nc -4u localhost 9000`
 
 
 ## Notes
 
-1. After the initial handshakes and housekeeping, the client should connect to other peers (for file sharing). Thus, "host" and "port" should resemble those of that peers. This can be facilitated by giving some sort of a map. Think about it. Or, we should close the connection with the BS and initiate another connection with the peers after the initial handshakes.After the initial handshakes and housekeeping, the client should connect to other peers (for file sharing). Thus, "host" and "port" should resemble those of that peers. This can be facilitated by giving some sort of a map. Think about it. Or, we should close the connection with the BS and initiate another connection with the peers after the initial handshakes. This should be remedied in `UDPClient.java` file in its `run()` method.
+1. After the initial handshakes and housekeeping, the client should connect to other peers (for file sharing). Thus, "host" and "port" should resemble those of that peers. This can be facilitated by giving some sort of a map. Think about it. Or, we should close the connection with the BS and initiate another connection with the peers after the initial handshakes.After the initial handshakes and housekeeping, the client should connect to other peers (for file sharing). Thus, "host" and "port" should resemble those of that peers. This can be facilitated by giving some sort of a map. Think about it. Or, we should close the connection with the BS and initiate another connection with the peers after the initial handshakes. This should be remedied in `UDPClient.java` file in its `run()` method. &#9745;
+
 
 2. TCP mainains reliability, flow control, order, low speed. 
 3. TCP is best suited for 

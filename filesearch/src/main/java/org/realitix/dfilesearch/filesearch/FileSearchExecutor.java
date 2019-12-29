@@ -1,5 +1,8 @@
 package org.realitix.dfilesearch.filesearch;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.util.JSONPObject;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.setup.Bootstrap;
@@ -104,6 +107,20 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
         @Path("{fileName}")
         public Response getFile(@PathParam("fileName") String fileName) {
             return Response.status(200).entity(synthesizeFile(fileName)).build();
+        }
+
+        @GET
+        @Path("/map")
+        public Response getNodeMap() {
+            Response r = null;
+            try {
+                r = Response.status(200)
+                        .entity((new ObjectMapper()).writeValueAsString(FileSearchExecutor.neighbourMap.getNodeMap()))
+                        .build();
+            } catch (JsonProcessingException e) {
+                logger.error(e.getMessage());
+            }
+            return r;
         }
 
         private FileResponse synthesizeFile(String fileName){

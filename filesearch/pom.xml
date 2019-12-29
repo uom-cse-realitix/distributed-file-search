@@ -17,6 +17,7 @@
         <webservice.version>0.0.1-SNAPSHOT</webservice.version>
         <nettty.version>4.1.43.Final</nettty.version>
         <log4j.version>1.2.17</log4j.version>
+        <junit.version>4.12</junit.version>
     </properties>
 
     <dependencies>
@@ -43,12 +44,12 @@
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
-            <version>1.2.17</version>
+            <version>${log4j.version}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.12</version>
+            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

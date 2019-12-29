@@ -4,9 +4,9 @@ A distributed methodology to search files in a system.
 
 ## Phases
 
-* Phase 1: Design network topology
-* Phase 2: Design & Develop a socket-based solution to find files requested by different nodes.
-* Phase 3: Web service (REST API) to support file transfer.
+* Phase 1: Design network topology :heavy_check_mark:
+* Phase 2: Design & Develop a socket-based solution to find files requested by different nodes. :x:
+* Phase 3: Web service (REST API) to support file transfer. :heavy_check_mark:
 
 <div align="center"> 
     <img src="docs/DistributedArchitecture.png" />

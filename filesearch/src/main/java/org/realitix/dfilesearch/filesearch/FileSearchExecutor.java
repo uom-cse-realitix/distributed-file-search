@@ -1,6 +1,7 @@
 package org.realitix.dfilesearch.filesearch;
 
 import io.dropwizard.Application;
+import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.netty.channel.Channel;
@@ -36,7 +37,9 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
     }
 
     @Override
-    public void initialize(Bootstrap<FileExecutorConfiguration> bootstrap) { }
+    public void initialize(Bootstrap<FileExecutorConfiguration> bootstrap) {
+        bootstrap.addBundle(new AssetsBundle("/assets/", "/" , "index.html"));
+    }
 
     @Override
     public void run(FileExecutorConfiguration fileExecutorConfiguration, Environment environment) {
@@ -48,6 +51,7 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
 
     private void startWebService(Environment environment) {
         logger.info("Enabling Web Service..");
+        environment.jersey().setUrlPattern("/api/*");
         environment.jersey().register(new FileSharingResource());
     }
 

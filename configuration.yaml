@@ -1,5 +1,6 @@
 name: Distributed File Executor
 server:
+  rootPath: /api/
   applicationConnectors:
     - type: http
       port: 8091

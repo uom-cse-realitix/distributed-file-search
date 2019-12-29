@@ -135,6 +135,8 @@ bootstrapServer:           # bootstrap server details
 
 6. Each `Node` has a `Channel` instance. Upon the `JOIN` query, these channels are initiated.
 
+7. Web interface at `/`, and api at `/api`.
+
 ```java
 public class UDPClient {
     // code
@@ -165,6 +167,7 @@ public class UDPClient {
 
 }
 ```
+
 
 ## TODOs
 

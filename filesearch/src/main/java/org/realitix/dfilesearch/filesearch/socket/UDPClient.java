@@ -23,13 +23,11 @@ public class UDPClient {
     private int port;
     private String username;
     private final Logger logger = Logger.getLogger(UDPClient.class);
-    private EventLoopGroup workerGroup;
 
     private UDPClient(UDPClientBuilder builder) {
         this.host = builder.host;
         this.port = builder.port;
         this.username = builder.username;
-        this.workerGroup = new NioEventLoopGroup();
     }
 
     public Channel createChannel(String remoteIp, int remotePort, ChannelInitializer<DatagramChannel> channelInitializer) throws InterruptedException {
@@ -37,9 +35,10 @@ public class UDPClient {
         b.group(new NioEventLoopGroup())
                 .channel(NioDatagramChannel.class)
                 .option(ChannelOption.SO_KEEPALIVE, true)
+                .localAddress(host, port)
                 .remoteAddress(remoteIp, remotePort)
                 .handler(channelInitializer);
-        return b.connect().channel().bind(SocketUtils.socketAddress(host, port)).sync().await().channel();
+        return b.connect().sync().await().channel();
     }
 
     /**
@@ -57,6 +56,7 @@ public class UDPClient {
             write(channel, (new RegisterRequest(localAddress.getHostString(), localAddress.getPort(), username)), bootstrapIp, bootstrapPort);
         } catch (InterruptedException e) {
             logger.error(e.getMessage());
+            Thread.currentThread().interrupt();         // Interrupt should not be ignored.
         }
     }
 
@@ -87,10 +87,6 @@ public class UDPClient {
     private void write(Channel channel, CommonMessage message, String remoteIp, int remotePort) throws InterruptedException {
        channel.writeAndFlush(new DatagramPacket(Unpooled.copiedBuffer(message.toString(), CharsetUtil.UTF_8),
                SocketUtils.socketAddress(remoteIp, remotePort))).sync().await();
-    }
-
-    private EventLoopGroup getWorkerGroup() {
-        return workerGroup;
     }
 
     /**

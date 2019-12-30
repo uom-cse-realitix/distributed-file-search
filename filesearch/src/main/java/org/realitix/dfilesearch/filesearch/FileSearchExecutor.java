@@ -12,6 +12,9 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.realitix.dfilesearch.filesearch.beans.messages.CommonMessage;
+import org.realitix.dfilesearch.filesearch.beans.messages.JoinRequest;
+import org.realitix.dfilesearch.filesearch.beans.messages.RegisterRequest;
 import org.realitix.dfilesearch.filesearch.configuration.FileExecutorConfiguration;
 import org.realitix.dfilesearch.filesearch.socket.UDPClient;
 import org.realitix.dfilesearch.filesearch.socket.UDPServer;
@@ -27,6 +30,8 @@ import javax.ws.rs.core.Response;
 
 public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
 
+    private static UDPClient udpClient;
+    private FileExecutorConfiguration configuration;
     public static final NodeMap neighbourMap = new NodeMap();
     private static final Logger logger = LogManager.getLogger(FileSearchExecutor.class);
 
@@ -46,6 +51,7 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
     @Override
     public void run(FileExecutorConfiguration fileExecutorConfiguration, Environment environment) {
         BasicConfigurator.configure();
+        configuration = fileExecutorConfiguration;
         registerBackendClient(fileExecutorConfiguration);
         startWebService(environment);
         startUdpServer(fileExecutorConfiguration);
@@ -57,6 +63,11 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
         environment.jersey().register(new FileSharingResource());
     }
 
+    @Override
+    public Class<FileExecutorConfiguration> getConfigurationClass() {
+        return super.getConfigurationClass();
+    }
+
     private Channel startUdpServer(FileExecutorConfiguration configuration) {
         UDPServer server = UDPServer.UDPServerBuilder.newInstance()
                 .setHost(configuration.getUdpServer().getHost())
@@ -65,7 +76,7 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
         return server.listen();
     }
 
-    private UDPClient registerBackendClient(FileExecutorConfiguration configuration) {
+    private static UDPClient registerBackendClient(FileExecutorConfiguration configuration) {
         UDPClient client = UDPClient.UDPClientBuilder.newInstance()
                 .setHost(configuration.getPorts().getHost())
                 .setPort(configuration.getPorts().getPort())
@@ -76,6 +87,7 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
         } catch (InterruptedException e) {
             logger.error(e.getMessage());
         }
+        udpClient = client;
         return client;
     }
 
@@ -90,6 +102,19 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
             default:
                 logger.error("Error in the node map.");
         }
+    }
+
+    private static void runClientCommand(CommonMessage message, FileExecutorConfiguration configuration) throws InterruptedException {
+        if (message instanceof RegisterRequest) udpClient.register(configuration.getBootstrapServer().getHost(), configuration.getBootstrapServer().getPort());
+        else if (message instanceof JoinRequest) udpClient.join(neighbourMap.getNodeMap().get(1), neighbourMap.getNodeMap().get(2));
+    }
+
+    public UDPClient getUdpClient() {
+        return udpClient;
+    }
+
+    public FileExecutorConfiguration getConfiguration() {
+        return configuration;
     }
 
     /**************

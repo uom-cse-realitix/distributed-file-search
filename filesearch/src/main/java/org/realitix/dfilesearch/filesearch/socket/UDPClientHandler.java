@@ -12,6 +12,7 @@ import org.realitix.dfilesearch.filesearch.util.ResponseParserImpl;
 
 /**
  * Handler for Client.
+ * This handler is not stateful.
  * Read the docs: https://netty.io/wiki/new-and-noteworthy-in-4.0.html#wiki-h4-19
  * The pipeline is channelRegistered -> channelActive -> channelInactive -> channelUnregistered
  */

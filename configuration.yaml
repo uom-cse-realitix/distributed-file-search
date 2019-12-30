@@ -3,17 +3,17 @@ server:
   rootPath: /api/
   applicationConnectors:
     - type: http
-      port: 8093
+      port: 8091
   adminConnectors:
     - type: http
-      port: 8094
+      port: 8092
 ports:
-  port: 5002
+  port: 5001
   host: 127.0.0.1
   username: 1234abcd
 bootstrapServer:
   port: 55555
   host: 127.0.0.1
 udpServer:
-  port: 9001
+  port: 9000
   host: 127.0.0.1

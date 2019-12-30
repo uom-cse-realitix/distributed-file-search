@@ -7,6 +7,9 @@ import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandler;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.log4j.BasicConfigurator;
@@ -77,26 +80,35 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
     }
 
     private static UDPClient registerBackendClient(FileExecutorConfiguration configuration) {
-        UDPClient client = UDPClient.UDPClientBuilder.newInstance()
+        final UDPClient client = UDPClient.UDPClientBuilder.newInstance()
                 .setHost(configuration.getPorts().getHost())
                 .setPort(configuration.getPorts().getPort())
                 .setUsername(configuration.getPorts().getUsername())
                 .build();
         try {
-            client.register(configuration.getBootstrapServer().getHost(), configuration.getBootstrapServer().getPort());
+            client.register(configuration.getBootstrapServer().getHost(), configuration.getBootstrapServer().getPort()).sync().await();
+            joinBackendClient(client);
         } catch (InterruptedException e) {
             logger.error(e.getMessage());
+            Thread.currentThread().interrupt();
         }
         udpClient = client;
         return client;
     }
 
-    private void joinBackendClient(UDPClient client) throws InterruptedException {
+    public static void joinBackendClient(UDPClient client) throws InterruptedException {
+        int size = neighbourMap.getNodeMap().size();
+        String preAmble = "NodeMap size is: ";
         switch (neighbourMap.getNodeMap().size()) {
+            case 0:
+                logger.info(preAmble + size + ". Therefore, not calling JOIN.");
+                break;
             case 1:
+                logger.info(preAmble + size + ". Therefore, calling JOIN.");
                 client.join(neighbourMap.getNodeMap().get(1), null);
                 break;
             case 2:
+                logger.info(preAmble + size + ". Therefore, calling JOIN.");
                 client.join(neighbourMap.getNodeMap().get(1), neighbourMap.getNodeMap().get(2));
                 break;
             default:
@@ -109,7 +121,7 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
         else if (message instanceof JoinRequest) udpClient.join(neighbourMap.getNodeMap().get(1), neighbourMap.getNodeMap().get(2));
     }
 
-    public UDPClient getUdpClient() {
+    public static UDPClient getUdpClient() {
         return udpClient;
     }
 

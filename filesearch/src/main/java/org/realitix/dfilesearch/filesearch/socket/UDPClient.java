@@ -49,15 +49,17 @@ public class UDPClient {
      * @param bootstrapPort server port
      * host and port should be configured in the jar.
      */
-    public void register(String bootstrapIp, int bootstrapPort) throws InterruptedException {
+    public ChannelFuture register(String bootstrapIp, int bootstrapPort) throws InterruptedException {
         Channel channel = createChannel(bootstrapIp, bootstrapPort, new UDPClientInitializer());
+        ChannelFuture future = null;
         try {
             InetSocketAddress localAddress = (InetSocketAddress) channel.localAddress();
-            write(channel, (new RegisterRequest(localAddress.getHostString(), localAddress.getPort(), username)), bootstrapIp, bootstrapPort);
+            future = write(channel, (new RegisterRequest(localAddress.getHostString(), localAddress.getPort(), username)), bootstrapIp, bootstrapPort);
         } catch (InterruptedException e) {
             logger.error(e.getMessage());
             Thread.currentThread().interrupt();         // Interrupt should not be ignored.
         }
+        return future;
     }
 
     /**
@@ -84,8 +86,9 @@ public class UDPClient {
      * @param remotePort IP of bootstrap server
      * @throws InterruptedException
      */
-    private void write(Channel channel, CommonMessage message, String remoteIp, int remotePort) throws InterruptedException {
-       channel.writeAndFlush(new DatagramPacket(Unpooled.copiedBuffer(message.toString(), CharsetUtil.UTF_8),
+    private ChannelFuture write(Channel channel, CommonMessage message, String remoteIp, int remotePort)
+            throws InterruptedException {
+       return channel.writeAndFlush(new DatagramPacket(Unpooled.copiedBuffer(message.toString(), CharsetUtil.UTF_8),
                SocketUtils.socketAddress(remoteIp, remotePort))).sync().await();
     }
 

@@ -41,6 +41,7 @@ public class UDPServer {
             logger.info("WS UDP server listening to port: " + port);
         } catch (InterruptedException e) {
             logger.error(e.getMessage());
+            Thread.currentThread().interrupt();
         }
         return channel;
     }

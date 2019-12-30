@@ -7,6 +7,8 @@ import io.netty.util.CharsetUtil;
 import io.netty.channel.socket.DatagramPacket;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.realitix.dfilesearch.filesearch.util.ResponseParser;
+import org.realitix.dfilesearch.filesearch.util.ServerResponseParserImpl;
 
 /**
  * Normally, a server extends ChannelInboundHandlerAdapter
@@ -18,17 +20,22 @@ import org.apache.log4j.Logger;
 public class UDPServerHandler extends SimpleChannelInboundHandler<DatagramPacket> {
 
     private static final Logger logger = LogManager.getLogger(UDPServerHandler.class);
+    private static final ResponseParser<String> responseParser = new ServerResponseParserImpl();
 
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, DatagramPacket datagramPacket) throws Exception {
         String message = datagramPacket.content().toString(CharsetUtil.UTF_8);
         logger.info("Message received from peer: " + message);
-        channelHandlerContext.write(message);
+        processMessage(message);
     }
 
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
         ctx.flush();
+    }
+
+    public void processMessage(String message) {
+        responseParser.parse(message);
     }
 
     @Override

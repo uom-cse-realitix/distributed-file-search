@@ -3,8 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <title>Distributed File Search</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
 </head>
 <body>
-    <h1>Welcome!</h1>
+    <div class="container">
+        <!-- Default form login -->
+        <form class="text-center border border-light p-5" action="#!">
+            <p class="h4 mb-4">Enter your query here.</p>
+            <input type="email" id="defaultLoginFormEmail" class="form-control mb-4" placeholder="Query">
+            <button class="btn btn-info btn-block my-4" onclick="execute()">Execute</button>
+        </form>
+    </div>
+    <script src="js/bootstrap.min.js"></script>
+    <script>
+        function execute() {
+            console.log("Fetch!")
+        }
+    </script>
 </body>
 </html>

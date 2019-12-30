@@ -7,9 +7,6 @@ import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandler;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.log4j.BasicConfigurator;
@@ -34,6 +31,8 @@ import javax.ws.rs.core.Response;
 public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
 
     private static UDPClient udpClient;
+    private static UDPClient udpClient1;
+    private static UDPClient udpClient2;
     private FileExecutorConfiguration configuration;
     public static final NodeMap neighbourMap = new NodeMap();
     private static final Logger logger = LogManager.getLogger(FileSearchExecutor.class);
@@ -81,13 +80,14 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
 
     private static UDPClient registerBackendClient(FileExecutorConfiguration configuration) {
         final UDPClient client = UDPClient.UDPClientBuilder.newInstance()
-                .setHost(configuration.getPorts().getHost())
-                .setPort(configuration.getPorts().getPort())
-                .setUsername(configuration.getPorts().getUsername())
-                .build();
+                .setHost(configuration.getClient().getHost())
+                .setPort(configuration.getClient().getPort())
+                .setUsername(configuration.getClient().getUsername())
+                .build(configuration);
+        udpClient1 = UDPClient.UDPClientBuilder.newInstance().build(configuration);
+        udpClient2 = UDPClient.UDPClientBuilder.newInstance().build(configuration);
         try {
             client.register(configuration.getBootstrapServer().getHost(), configuration.getBootstrapServer().getPort()).sync().await();
-            joinBackendClient(client);
         } catch (InterruptedException e) {
             logger.error(e.getMessage());
             Thread.currentThread().interrupt();
@@ -125,6 +125,14 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
         return udpClient;
     }
 
+    public static UDPClient getUdpClient1() {
+        return udpClient1;
+    }
+
+    public static UDPClient getUdpClient2() {
+        return udpClient2;
+    }
+
     public FileExecutorConfiguration getConfiguration() {
         return configuration;
     }
@@ -151,7 +159,8 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
             Response r = null;
             try {
                 r = Response.status(200)
-                        .entity((new ObjectMapper()).writeValueAsString(FileSearchExecutor.neighbourMap.getNodeMap()))
+                        .entity((new ObjectMapper())
+                                .writeValueAsString(FileSearchExecutor.neighbourMap.getNodeMap()))
                         .build();
             } catch (JsonProcessingException e) {
                 logger.error(e.getMessage());

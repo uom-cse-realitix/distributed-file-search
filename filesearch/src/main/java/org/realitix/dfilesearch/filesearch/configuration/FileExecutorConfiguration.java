@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.dropwizard.Configuration;
 
 import javax.validation.constraints.NotEmpty;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Configuration for FileSearchExecutor
@@ -14,11 +16,13 @@ public class FileExecutorConfiguration extends Configuration {
     @NotEmpty
     private String name;
 
-    private NodeConfiguration ports;
+    private NodeConfiguration client;
 
     private NodeConfiguration bootstrapServer;
 
     private UDPServerConfiguration udpServer;
+
+    private List<NodeConfiguration> clientsToNeighbours;
 
     @JsonProperty
     public String getName() {
@@ -30,12 +34,12 @@ public class FileExecutorConfiguration extends Configuration {
         this.name = name;
     }
 
-    public NodeConfiguration getPorts() {
-        return ports;
+    public NodeConfiguration getClient() {
+        return client;
     }
 
-    public void setPorts(NodeConfiguration ports) {
-        this.ports = ports;
+    public void setClient(NodeConfiguration client) {
+        this.client = client;
     }
 
     public NodeConfiguration getBootstrapServer() {
@@ -52,5 +56,13 @@ public class FileExecutorConfiguration extends Configuration {
 
     public void setUdpServer(UDPServerConfiguration udpServer) {
         this.udpServer = udpServer;
+    }
+
+    public List<NodeConfiguration> getClientsToNeighbours() {
+        return clientsToNeighbours;
+    }
+
+    public void setClientsToNeighbours(List<NodeConfiguration> clientsToNeighbours) {
+        this.clientsToNeighbours = clientsToNeighbours;
     }
 }

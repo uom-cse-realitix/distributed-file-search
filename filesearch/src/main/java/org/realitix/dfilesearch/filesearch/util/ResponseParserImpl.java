@@ -16,12 +16,6 @@ public class ResponseParserImpl implements ResponseParser<String>{
             case "REGOK":
                 logger.info("ACK for REG received.");
                 parseRegok(s);
-                try {
-                    FileSearchExecutor.joinBackendClient(FileSearchExecutor.getUdpClient());
-                } catch (InterruptedException e) {
-                    logger.error(e.getMessage());
-                    Thread.currentThread().interrupt();
-                }
                 break;
             case "UNREGOK":
                 logger.info("Response FOR UNROK received.");

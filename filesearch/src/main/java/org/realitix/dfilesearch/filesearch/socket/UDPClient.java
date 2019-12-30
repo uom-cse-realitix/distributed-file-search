@@ -14,6 +14,7 @@ import org.realitix.dfilesearch.filesearch.beans.Node;
 import org.realitix.dfilesearch.filesearch.beans.messages.CommonMessage;
 import org.realitix.dfilesearch.filesearch.beans.messages.JoinRequest;
 import org.realitix.dfilesearch.filesearch.beans.messages.RegisterRequest;
+import org.realitix.dfilesearch.filesearch.configuration.FileExecutorConfiguration;
 
 import java.net.InetSocketAddress;
 
@@ -22,12 +23,14 @@ public class UDPClient {
     private String host;
     private int port;
     private String username;
+    private FileExecutorConfiguration configuration;
     private final Logger logger = Logger.getLogger(UDPClient.class);
 
     private UDPClient(UDPClientBuilder builder) {
         this.host = builder.host;
         this.port = builder.port;
         this.username = builder.username;
+        this.configuration = builder.configuration;
     }
 
     public Channel createChannel(String remoteIp, int remotePort, ChannelInitializer<DatagramChannel> channelInitializer) throws InterruptedException {
@@ -36,6 +39,17 @@ public class UDPClient {
                 .channel(NioDatagramChannel.class)
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .localAddress(host, port)
+                .remoteAddress(remoteIp, remotePort)
+                .handler(channelInitializer);
+        return b.connect().sync().await().channel();
+    }
+
+    public Channel createChannel(String localIp, int localPort, String remoteIp, int remotePort, ChannelInitializer<DatagramChannel> channelInitializer) throws InterruptedException {
+        Bootstrap b = new Bootstrap();
+        b.group(new NioEventLoopGroup())
+                .channel(NioDatagramChannel.class)
+                .option(ChannelOption.SO_KEEPALIVE, true)
+                .localAddress(localIp, localPort)
                 .remoteAddress(remoteIp, remotePort)
                 .handler(channelInitializer);
         return b.connect().sync().await().channel();
@@ -69,11 +83,11 @@ public class UDPClient {
      * @throws InterruptedException
      */
     public void join(Node neighbour1, Node neighbour2) throws InterruptedException {
-        UDPJoinInitializer initializer = new UDPJoinInitializer();
-        neighbour1.setChannel(createChannel(neighbour1.getIp(), neighbour1.getPort(), initializer));
+        neighbour1.setChannel(createChannel(configuration.getClientsToNeighbours().get(1).getHost(), configuration.getClientsToNeighbours().get(1).getPort(), neighbour1.getIp(), neighbour1.getPort(),  new UDPJoinInitializer(configuration)));
+        logger.info("First node: " + neighbour1.getIp() + ":" + neighbour1.getPort());
         write(neighbour1.getChannel(), new JoinRequest(host, port), neighbour1.getIp(), neighbour1.getPort());
         if (neighbour2 != null) {
-            neighbour2.setChannel(createChannel(neighbour2.getIp(), neighbour2.getPort(), initializer));
+            neighbour2.setChannel(createChannel(configuration.getClientsToNeighbours().get(2).getHost(), configuration.getClientsToNeighbours().get(2).getPort(), neighbour2.getIp(), neighbour2.getPort(),  new UDPJoinInitializer(configuration)));
             write(neighbour2.getChannel(), new JoinRequest(host, port), neighbour2.getIp(), neighbour2.getPort());
         }
     }
@@ -92,6 +106,34 @@ public class UDPClient {
                SocketUtils.socketAddress(remoteIp, remotePort))).sync().await();
     }
 
+    public FileExecutorConfiguration getConfiguration() {
+        return configuration;
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
     /**
      * Builder class for the client
      */
@@ -99,6 +141,7 @@ public class UDPClient {
         private String host;
         private int port;
         private String username;
+        private FileExecutorConfiguration configuration;
 
         public static UDPClientBuilder newInstance() {
             return new UDPClientBuilder();
@@ -121,7 +164,8 @@ public class UDPClient {
             return this;
         }
 
-        public UDPClient build() {
+        public UDPClient build(FileExecutorConfiguration configuration) {
+            this.configuration = configuration;
             return new UDPClient(this);
         }
     }

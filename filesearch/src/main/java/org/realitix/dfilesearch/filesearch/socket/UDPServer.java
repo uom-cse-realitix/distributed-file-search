@@ -35,7 +35,7 @@ public class UDPServer {
         b.group(group)
                 .channel(NioDatagramChannel.class)
                 .option(ChannelOption.SO_BROADCAST, true)
-                .handler(new UDPServerHandler());
+                .handler(new UDPServerInitializer());
         try {
             channel = b.bind(host, port).sync().channel(); // .sync().channel().closeFuture.await()
             logger.info("WS UDP server listening to port: " + port);

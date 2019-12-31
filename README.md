@@ -113,7 +113,6 @@ bootstrapServer:           # bootstrap server details
 
 1. After the initial handshakes and housekeeping, the client should connect to other peers (for file sharing). Thus, "host" and "port" should resemble those of that peers. This can be facilitated by giving some sort of a map. Think about it. Or, we should close the connection with the BS and initiate another connection with the peers after the initial handshakes.After the initial handshakes and housekeeping, the client should connect to other peers (for file sharing). Thus, "host" and "port" should resemble those of that peers. This can be facilitated by giving some sort of a map. Think about it. Or, we should close the connection with the BS and initiate another connection with the peers after the initial handshakes. This should be remedied in `UDPClient.java` file in its `run()` method. &#9745;
 
-
 2. TCP mainains reliability, flow control, order, low speed. 
 3. TCP is best suited for 
     
@@ -137,6 +136,8 @@ bootstrapServer:           # bootstrap server details
 6. Each `Node` has a `Channel` instance. Upon the `JOIN` query, these channels are initiated.
 
 7. Web interface at `/`, and api at `/api`. File is served at `/api/file/{fileName}`, and nodemap is served at `/api/file/map`.
+
+8. In `REG` request, the port sent is the `server` socket port.
 
 ```java
 public class UDPClient {

@@ -10,6 +10,7 @@ import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.util.CharsetUtil;
 import io.netty.util.internal.SocketUtils;
 import org.apache.log4j.Logger;
+import org.realitix.dfilesearch.filesearch.FileSearchExecutor;
 import org.realitix.dfilesearch.filesearch.beans.Node;
 import org.realitix.dfilesearch.filesearch.beans.messages.CommonMessage;
 import org.realitix.dfilesearch.filesearch.beans.messages.JoinRequest;
@@ -44,7 +45,7 @@ public class UDPClient {
         return b.connect().sync().await().channel();
     }
 
-    public Channel createChannel(String localIp, int localPort, String remoteIp, int remotePort, ChannelInitializer<DatagramChannel> channelInitializer) throws InterruptedException {
+    public ChannelFuture createChannel(String localIp, int localPort, String remoteIp, int remotePort, ChannelInitializer<DatagramChannel> channelInitializer) throws InterruptedException {
         Bootstrap b = new Bootstrap();
         b.group(new NioEventLoopGroup())
                 .channel(NioDatagramChannel.class)
@@ -52,7 +53,7 @@ public class UDPClient {
                 .localAddress(localIp, localPort)
                 .remoteAddress(remoteIp, remotePort)
                 .handler(channelInitializer);
-        return b.connect().sync().await().channel();
+        return b.connect().sync().await();
     }
 
     /**
@@ -63,12 +64,12 @@ public class UDPClient {
      * @param bootstrapPort server port
      * host and port should be configured in the jar.
      */
-    public ChannelFuture register(String bootstrapIp, int bootstrapPort) throws InterruptedException {
+    public ChannelFuture register(String bootstrapIp, int bootstrapPort, int udpServerPort) throws InterruptedException {
         Channel channel = createChannel(bootstrapIp, bootstrapPort, new UDPClientInitializer());
         ChannelFuture future = null;
         try {
             InetSocketAddress localAddress = (InetSocketAddress) channel.localAddress();
-            future = write(channel, (new RegisterRequest(localAddress.getHostString(), localAddress.getPort(), username)), bootstrapIp, bootstrapPort);
+            future = write(channel, (new RegisterRequest(localAddress.getHostString(), udpServerPort, username)), bootstrapIp, bootstrapPort);
         } catch (InterruptedException e) {
             logger.error(e.getMessage());
             Thread.currentThread().interrupt();         // Interrupt should not be ignored.
@@ -83,11 +84,11 @@ public class UDPClient {
      * @throws InterruptedException
      */
     public void join(Node neighbour1, Node neighbour2) throws InterruptedException {
-        neighbour1.setChannel(createChannel(configuration.getClientsToNeighbours().get(1).getHost(), configuration.getClientsToNeighbours().get(1).getPort(), neighbour1.getIp(), neighbour1.getPort(),  new UDPJoinInitializer(configuration)));
+        neighbour1.setChannel(createChannel(configuration.getClientsToNeighbours().get(1).getHost(), configuration.getClientsToNeighbours().get(1).getPort(), neighbour1.getIp(), neighbour1.getPort(), new UDPJoinInitializer(configuration)).sync().channel());
         logger.info("First node: " + neighbour1.getIp() + ":" + neighbour1.getPort());
         write(neighbour1.getChannel(), new JoinRequest(host, port), neighbour1.getIp(), neighbour1.getPort());
         if (neighbour2 != null) {
-            neighbour2.setChannel(createChannel(configuration.getClientsToNeighbours().get(2).getHost(), configuration.getClientsToNeighbours().get(2).getPort(), neighbour2.getIp(), neighbour2.getPort(),  new UDPJoinInitializer(configuration)));
+            neighbour2.setChannel(createChannel(configuration.getClientsToNeighbours().get(2).getHost(), configuration.getClientsToNeighbours().get(2).getPort(), neighbour2.getIp(), neighbour2.getPort(), new UDPJoinInitializer(configuration)).sync().channel());
             write(neighbour2.getChannel(), new JoinRequest(host, port), neighbour2.getIp(), neighbour2.getPort());
         }
     }

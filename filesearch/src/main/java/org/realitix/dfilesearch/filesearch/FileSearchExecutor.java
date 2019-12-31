@@ -87,7 +87,7 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
         udpClient1 = UDPClient.UDPClientBuilder.newInstance().build(configuration);
         udpClient2 = UDPClient.UDPClientBuilder.newInstance().build(configuration);
         try {
-            client.register(configuration.getBootstrapServer().getHost(), configuration.getBootstrapServer().getPort()).sync().await();
+            client.register(configuration.getBootstrapServer().getHost(), configuration.getBootstrapServer().getPort(), configuration.getUdpServer().getPort()).sync().await();
         } catch (InterruptedException e) {
             logger.error(e.getMessage());
             Thread.currentThread().interrupt();
@@ -117,7 +117,7 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
     }
 
     private static void runClientCommand(CommonMessage message, FileExecutorConfiguration configuration) throws InterruptedException {
-        if (message instanceof RegisterRequest) udpClient.register(configuration.getBootstrapServer().getHost(), configuration.getBootstrapServer().getPort());
+        if (message instanceof RegisterRequest) udpClient.register(configuration.getBootstrapServer().getHost(), configuration.getBootstrapServer().getPort(), configuration.getUdpServer().getPort());
         else if (message instanceof JoinRequest) udpClient.join(neighbourMap.getNodeMap().get(1), neighbourMap.getNodeMap().get(2));
     }
 

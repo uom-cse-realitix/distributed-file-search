@@ -23,7 +23,13 @@ public class UDPServerHandler extends SimpleChannelInboundHandler<DatagramPacket
     private static final ResponseParser<String> responseParser = new ServerResponseParserImpl();
 
     @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        logger.info("Channel Active!");
+    }
+
+    @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, DatagramPacket datagramPacket) throws Exception {
+        logger.info("Channel read!");
         String message = datagramPacket.content().toString(CharsetUtil.UTF_8);
         logger.info("Message received from peer: " + message);
         processMessage(message);
@@ -31,7 +37,6 @@ public class UDPServerHandler extends SimpleChannelInboundHandler<DatagramPacket
 
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
-        ctx.flush();
     }
 
     public void processMessage(String message) {

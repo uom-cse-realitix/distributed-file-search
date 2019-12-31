@@ -44,7 +44,7 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
 
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
-//        join();
+        join();
     }
 
     @Override

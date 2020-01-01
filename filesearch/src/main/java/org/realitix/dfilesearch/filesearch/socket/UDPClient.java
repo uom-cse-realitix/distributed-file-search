@@ -10,9 +10,7 @@ import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.util.CharsetUtil;
 import io.netty.util.internal.SocketUtils;
 import org.apache.log4j.Logger;
-import org.realitix.dfilesearch.filesearch.beans.Node;
 import org.realitix.dfilesearch.filesearch.beans.messages.CommonMessage;
-import org.realitix.dfilesearch.filesearch.beans.messages.JoinRequest;
 import org.realitix.dfilesearch.filesearch.beans.messages.RegisterRequest;
 import org.realitix.dfilesearch.filesearch.configuration.FileExecutorConfiguration;
 
@@ -56,7 +54,10 @@ public class UDPClient {
         ChannelFuture future = null;
         try {
             InetSocketAddress localAddress = (InetSocketAddress) channel.localAddress();
-            future = write(channel, (new RegisterRequest(localAddress.getHostString(), localAddress.getPort(), username)), bootstrapIp, bootstrapPort);
+            future = write(channel,
+                    new RegisterRequest(localAddress.getHostString(), localAddress.getPort(), username),
+                    bootstrapIp,
+                    bootstrapPort);
         } catch (InterruptedException e) {
             logger.error(e.getMessage());
             Thread.currentThread().interrupt();         // Interrupt should not be ignored.
@@ -76,10 +77,6 @@ public class UDPClient {
             throws InterruptedException {
        return channel.writeAndFlush(new DatagramPacket(Unpooled.copiedBuffer(message.toString(), CharsetUtil.UTF_8),
                SocketUtils.socketAddress(remoteIp, remotePort))).sync().await();
-    }
-
-    public FileExecutorConfiguration getConfiguration() {
-        return configuration;
     }
 
     public String getHost() {

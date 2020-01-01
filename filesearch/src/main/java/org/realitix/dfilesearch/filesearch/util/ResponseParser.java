@@ -7,6 +7,10 @@ package org.realitix.dfilesearch.filesearch.util;
  */
 public interface ResponseParser<T> {
 
+    /**
+     * Parsing responses coming to the node
+     * @param t response
+     */
     void parse(T t);
 
 }

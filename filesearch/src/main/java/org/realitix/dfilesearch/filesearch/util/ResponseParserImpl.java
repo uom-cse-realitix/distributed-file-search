@@ -12,7 +12,8 @@ public class ResponseParserImpl implements ResponseParser<String>{
 
     @Override
     public void parse(String s) {
-        switch (s.split(" ")[1]) {
+        String command = s.split(" ")[1];
+        switch (command) {
             case "REGOK":
                 logger.info("ACK for REG received.");
                 parseRegok(s);
@@ -22,7 +23,7 @@ public class ResponseParserImpl implements ResponseParser<String>{
                 parseUnRegok(s);
                 break;
             default:
-                logger.error("Undetermined response from the server.");
+                logger.error("Passed to RequestParser.");
         }
     }
 

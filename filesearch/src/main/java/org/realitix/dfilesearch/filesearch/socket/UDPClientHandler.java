@@ -11,6 +11,8 @@ import org.apache.log4j.Logger;
 import org.realitix.dfilesearch.filesearch.FileSearchExecutor;
 import org.realitix.dfilesearch.filesearch.beans.Node;
 import org.realitix.dfilesearch.filesearch.beans.messages.JoinRequest;
+import org.realitix.dfilesearch.filesearch.util.RequestParser;
+import org.realitix.dfilesearch.filesearch.util.RequestParserImpl;
 import org.realitix.dfilesearch.filesearch.util.ResponseParser;
 import org.realitix.dfilesearch.filesearch.util.ResponseParserImpl;
 
@@ -25,11 +27,14 @@ import java.util.HashMap;
 public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket> {
 
     private static Logger logger = LogManager.getLogger(UDPClientHandler.class);
-    private static final ResponseParser<String> responseParser = new ResponseParserImpl();
+    private final ResponseParser<String> responseParser;
+    private final RequestParser<String> requestParser;
     private Channel channel;
 
     public UDPClientHandler(Channel channel) {
         this.channel = channel;
+        responseParser = new ResponseParserImpl();
+        requestParser = new RequestParserImpl(channel);
     }
 
     @Override
@@ -41,6 +46,7 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
         String message = datagramPacket.content().toString(CharsetUtil.UTF_8);
         logger.info("Response message: " + message);
         processResponse(message);
+        requestParser.parse(message);
     }
 
     @Override
@@ -50,9 +56,7 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
     }
 
     @Override
-    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
-        join(channel);
-    }
+    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception { }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {

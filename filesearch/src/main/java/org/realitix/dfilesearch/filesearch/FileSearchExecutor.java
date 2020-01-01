@@ -49,7 +49,6 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
         configuration = fileExecutorConfiguration;
         registerBackendClient(fileExecutorConfiguration);
         startWebService(environment);
-//        startUdpServer(fileExecutorConfiguration);
     }
 
     private void startWebService(Environment environment) {

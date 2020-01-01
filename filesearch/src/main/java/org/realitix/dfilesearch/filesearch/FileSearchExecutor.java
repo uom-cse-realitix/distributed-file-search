@@ -6,18 +6,13 @@ import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import io.netty.channel.Channel;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.realitix.dfilesearch.filesearch.beans.messages.CommonMessage;
-import org.realitix.dfilesearch.filesearch.beans.messages.JoinRequest;
-import org.realitix.dfilesearch.filesearch.beans.messages.RegisterRequest;
 import org.realitix.dfilesearch.filesearch.configuration.FileExecutorConfiguration;
 import org.realitix.dfilesearch.filesearch.socket.UDPClient;
-import org.realitix.dfilesearch.filesearch.socket.UDPServer;
 import org.realitix.dfilesearch.filesearch.util.NodeMap;
 import org.realitix.dfilesearch.webservice.beans.FileResponse;
 
@@ -66,14 +61,6 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
     @Override
     public Class<FileExecutorConfiguration> getConfigurationClass() {
         return super.getConfigurationClass();
-    }
-
-    private Channel startUdpServer(FileExecutorConfiguration configuration) {
-        UDPServer server = UDPServer.UDPServerBuilder.newInstance()
-                .setHost(configuration.getUdpServer().getHost())
-                .setPort(configuration.getUdpServer().getPort())
-                .build();
-        return server.listen();
     }
 
     private static UDPClient registerBackendClient(FileExecutorConfiguration configuration) {

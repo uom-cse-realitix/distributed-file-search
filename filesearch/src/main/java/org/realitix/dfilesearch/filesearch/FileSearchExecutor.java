@@ -31,8 +31,6 @@ import javax.ws.rs.core.Response;
 public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
 
     private static UDPClient udpClient;
-    private static UDPClient udpClient1;
-    private static UDPClient udpClient2;
     private FileExecutorConfiguration configuration;
     public static final NodeMap neighbourMap = new NodeMap();
     private static final Logger logger = LogManager.getLogger(FileSearchExecutor.class);
@@ -56,7 +54,7 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
         configuration = fileExecutorConfiguration;
         registerBackendClient(fileExecutorConfiguration);
         startWebService(environment);
-        startUdpServer(fileExecutorConfiguration);
+//        startUdpServer(fileExecutorConfiguration);
     }
 
     private void startWebService(Environment environment) {
@@ -84,10 +82,8 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
                 .setPort(configuration.getClient().getPort())
                 .setUsername(configuration.getClient().getUsername())
                 .build(configuration);
-        udpClient1 = UDPClient.UDPClientBuilder.newInstance().build(configuration);
-        udpClient2 = UDPClient.UDPClientBuilder.newInstance().build(configuration);
         try {
-            client.register(configuration.getBootstrapServer().getHost(), configuration.getBootstrapServer().getPort(), configuration.getUdpServer().getPort()).sync().await();
+            client.register(configuration.getBootstrapServer().getHost(), configuration.getBootstrapServer().getPort()).sync().await();
         } catch (InterruptedException e) {
             logger.error(e.getMessage());
             Thread.currentThread().interrupt();
@@ -96,41 +92,8 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
         return client;
     }
 
-    public static void joinBackendClient(UDPClient client) throws InterruptedException {
-        int size = neighbourMap.getNodeMap().size();
-        String preAmble = "NodeMap size is: ";
-        switch (neighbourMap.getNodeMap().size()) {
-            case 0:
-                logger.info(preAmble + size + ". Therefore, not calling JOIN.");
-                break;
-            case 1:
-                logger.info(preAmble + size + ". Therefore, calling JOIN.");
-                client.join(neighbourMap.getNodeMap().get(1), null);
-                break;
-            case 2:
-                logger.info(preAmble + size + ". Therefore, calling JOIN.");
-                client.join(neighbourMap.getNodeMap().get(1), neighbourMap.getNodeMap().get(2));
-                break;
-            default:
-                logger.error("Error in the node map.");
-        }
-    }
-
-    private static void runClientCommand(CommonMessage message, FileExecutorConfiguration configuration) throws InterruptedException {
-        if (message instanceof RegisterRequest) udpClient.register(configuration.getBootstrapServer().getHost(), configuration.getBootstrapServer().getPort(), configuration.getUdpServer().getPort());
-        else if (message instanceof JoinRequest) udpClient.join(neighbourMap.getNodeMap().get(1), neighbourMap.getNodeMap().get(2));
-    }
-
     public static UDPClient getUdpClient() {
         return udpClient;
-    }
-
-    public static UDPClient getUdpClient1() {
-        return udpClient1;
-    }
-
-    public static UDPClient getUdpClient2() {
-        return udpClient2;
     }
 
     public FileExecutorConfiguration getConfiguration() {

@@ -1,5 +1,6 @@
 package org.realitix.dfilesearch.filesearch.socket;
 
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
@@ -9,6 +10,7 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.realitix.dfilesearch.filesearch.FileSearchExecutor;
 import org.realitix.dfilesearch.filesearch.beans.Node;
+import org.realitix.dfilesearch.filesearch.beans.messages.JoinRequest;
 import org.realitix.dfilesearch.filesearch.util.ResponseParser;
 import org.realitix.dfilesearch.filesearch.util.ResponseParserImpl;
 
@@ -24,6 +26,11 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
 
     private static Logger logger = LogManager.getLogger(UDPClientHandler.class);
     private static final ResponseParser<String> responseParser = new ResponseParserImpl();
+    private Channel channel;
+
+    public UDPClientHandler(Channel channel) {
+        this.channel = channel;
+    }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
@@ -44,7 +51,7 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
 
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
-        join();
+        join(channel);
     }
 
     @Override
@@ -56,10 +63,9 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
         responseParser.parse(string);
     }
 
-    private void join() throws InterruptedException {
+    private void join(Channel channel) throws InterruptedException {
         HashMap<Integer, Node> nodeMap = FileSearchExecutor.neighbourMap.getNodeMap();
-        UDPClient udpClient1 = FileSearchExecutor.getUdpClient1();
-        UDPClient udpClient2 = FileSearchExecutor.getUdpClient2();
+        UDPClient udpClient = FileSearchExecutor.getUdpClient();
         int size = nodeMap.size();
         String preAmble = "NodeMap size is: ";
         switch (size) {
@@ -68,17 +74,11 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
                 break;
             case 1:
                 logger.info(preAmble + size + ". Therefore, calling JOIN.");
-                udpClient1.setHost(nodeMap.get(1).getIp());
-                udpClient1.setPort(nodeMap.get(1).getPort());
-                udpClient1.join(nodeMap.get(1), null);
+                udpClient.write(channel, new JoinRequest(udpClient.getHost(), udpClient.getPort()), nodeMap.get(1).getIp(), nodeMap.get(1).getPort());
                 break;
             case 2:
                 logger.info(preAmble + size + ". Therefore, calling JOIN.");
-                udpClient1.setHost(nodeMap.get(1).getIp());
-                udpClient1.setPort(nodeMap.get(1).getPort());
-                udpClient2.setHost(nodeMap.get(2).getIp());
-                udpClient2.setPort(nodeMap.get(2).getPort());
-                udpClient1.join(nodeMap.get(1), nodeMap.get(2));
+                udpClient.write(channel, new JoinRequest(udpClient.getHost(), udpClient.getPort()), nodeMap.get(2).getIp(), nodeMap.get(2).getPort());
                 break;
             default:
                 logger.error("Undefined JOIN");

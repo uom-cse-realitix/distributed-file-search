@@ -34,26 +34,24 @@ public class UDPClient {
         this.configuration = builder.configuration;
     }
 
-    public Channel createChannel(String remoteIp, int remotePort, ChannelInitializer<DatagramChannel> channelInitializer) throws InterruptedException {
+    public Channel createChannel(ChannelInitializer<DatagramChannel> channelInitializer) throws InterruptedException {
         Bootstrap b = new Bootstrap();
         b.group(new NioEventLoopGroup())
                 .channel(NioDatagramChannel.class)
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .localAddress(host, port)
-                .remoteAddress(remoteIp, remotePort)
                 .handler(channelInitializer);
-        return b.connect().sync().await().channel();
+        return b.bind(host, port).sync().channel();
     }
 
-    public ChannelFuture createChannel(String localIp, int localPort, String remoteIp, int remotePort, ChannelInitializer<DatagramChannel> channelInitializer) throws InterruptedException {
+    public ChannelFuture createChannel(String localIp, int localPort, ChannelInitializer<DatagramChannel> channelInitializer) throws InterruptedException {
         Bootstrap b = new Bootstrap();
         b.group(new NioEventLoopGroup())
                 .channel(NioDatagramChannel.class)
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .localAddress(localIp, localPort)
-                .remoteAddress(remoteIp, remotePort)
                 .handler(channelInitializer);
-        return b.connect().sync().await();
+        return b.bind(localIp, localPort).sync().await();
     }
 
     /**
@@ -64,12 +62,12 @@ public class UDPClient {
      * @param bootstrapPort server port
      * host and port should be configured in the jar.
      */
-    public ChannelFuture register(String bootstrapIp, int bootstrapPort, int udpServerPort) throws InterruptedException {
-        Channel channel = createChannel(bootstrapIp, bootstrapPort, new UDPClientInitializer());
+    public ChannelFuture register(String bootstrapIp, int bootstrapPort) throws InterruptedException {
+        Channel channel = createChannel(new UDPClientInitializer());
         ChannelFuture future = null;
         try {
             InetSocketAddress localAddress = (InetSocketAddress) channel.localAddress();
-            future = write(channel, (new RegisterRequest(localAddress.getHostString(), udpServerPort, username)), bootstrapIp, bootstrapPort);
+            future = write(channel, (new RegisterRequest(localAddress.getHostString(), localAddress.getPort(), username)), bootstrapIp, bootstrapPort);
         } catch (InterruptedException e) {
             logger.error(e.getMessage());
             Thread.currentThread().interrupt();         // Interrupt should not be ignored.
@@ -83,12 +81,12 @@ public class UDPClient {
      * @param neighbour2 second neighbour
      * @throws InterruptedException
      */
-    public void join(Node neighbour1, Node neighbour2) throws InterruptedException {
-        neighbour1.setChannel(createChannel(configuration.getClientsToNeighbours().get(1).getHost(), configuration.getClientsToNeighbours().get(1).getPort(), neighbour1.getIp(), neighbour1.getPort(), new UDPJoinInitializer(configuration)).sync().channel());
+    public void join(Node neighbour1, Node neighbour2, Channel channel) throws InterruptedException {
+        neighbour1.setChannel(channel);
         logger.info("First node: " + neighbour1.getIp() + ":" + neighbour1.getPort());
         write(neighbour1.getChannel(), new JoinRequest(host, port), neighbour1.getIp(), neighbour1.getPort());
         if (neighbour2 != null) {
-            neighbour2.setChannel(createChannel(configuration.getClientsToNeighbours().get(2).getHost(), configuration.getClientsToNeighbours().get(2).getPort(), neighbour2.getIp(), neighbour2.getPort(), new UDPJoinInitializer(configuration)).sync().channel());
+            neighbour2.setChannel(channel);
             write(neighbour2.getChannel(), new JoinRequest(host, port), neighbour2.getIp(), neighbour2.getPort());
         }
     }
@@ -101,7 +99,7 @@ public class UDPClient {
      * @param remotePort IP of bootstrap server
      * @throws InterruptedException
      */
-    private ChannelFuture write(Channel channel, CommonMessage message, String remoteIp, int remotePort)
+    public ChannelFuture write(Channel channel, CommonMessage message, String remoteIp, int remotePort)
             throws InterruptedException {
        return channel.writeAndFlush(new DatagramPacket(Unpooled.copiedBuffer(message.toString(), CharsetUtil.UTF_8),
                SocketUtils.socketAddress(remoteIp, remotePort))).sync().await();

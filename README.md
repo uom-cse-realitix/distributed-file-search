@@ -142,30 +142,50 @@ bootstrapServer:           # bootstrap server details
 ```java
 public class UDPClient {
     // code
-     public Channel createChannel(String remoteIp, int remotePort, ChannelInitializer<DatagramChannel> channelInitializer) throws InterruptedException {
-            Bootstrap b = new Bootstrap();
-            b.group(new NioEventLoopGroup())
-                    .channel(NioDatagramChannel.class)
-                    .option(ChannelOption.SO_KEEPALIVE, true)
-                    .remoteAddress(remoteIp, remotePort)
-                    .handler(channelInitializer);
-            return b.connect().channel().bind(SocketUtils.socketAddress(host, port)).sync().await().channel();
+      public Channel createChannel(ChannelInitializer<DatagramChannel> channelInitializer) throws InterruptedException {
+             Bootstrap b = new Bootstrap();
+             b.group(new NioEventLoopGroup())
+                     .channel(NioDatagramChannel.class)
+                     .option(ChannelOption.SO_KEEPALIVE, true)
+                     .localAddress(host, port)
+                     .handler(channelInitializer);
+             return b.bind(host, port).sync().channel();
+         }
+
+        /**
+         * Write different messages
+         * @param channel channel between the client and server
+         * @param message transmitted message
+         * @param remoteIp IP of bootstrap server
+         * @param remotePort IP of bootstrap server
+         * @throws InterruptedException
+         */
+       public ChannelFuture write(Channel channel, CommonMessage message, String remoteIp, int remotePort)
+                throws InterruptedException {
+           return channel.writeAndFlush(new DatagramPacket(Unpooled.copiedBuffer(message.toString(), CharsetUtil.UTF_8),
+                   SocketUtils.socketAddress(remoteIp, remotePort))).sync().await();
         }
 
-    /**
-     * Sends the JOIN request to the neighbors
-     * @param neighbour1 first neighbour
-     * @param neighbour2 second neighbour
-     * @throws InterruptedException
-     */
-    public void join(Node neighbour1, Node neighbour2) throws InterruptedException {
-        UDPJoinInitializer initializer = new UDPJoinInitializer();
-        neighbour1.setChannel(createChannel(neighbour1.getIp(), neighbour1.getPort(), initializer));
-        neighbour2.setChannel(createChannel(neighbour2.getIp(), neighbour2.getPort(), initializer));
-        write(neighbour1.getChannel(), new JoinRequest(host, port), neighbour1.getIp(), neighbour1.getPort());
-        write(neighbour2.getChannel(), new JoinRequest(host, port), neighbour2.getIp(), neighbour2.getPort());
-    }
-
+        /**
+         * Runs the client socket
+         * Registers the node with BS
+         * Method connect() connects to a remote server and bind() binds the process to a local socket
+         * @param bootstrapIp server host IP
+         * @param bootstrapPort server port
+         * host and port should be configured in the jar.
+         */
+        public ChannelFuture register(String bootstrapIp, int bootstrapPort) throws InterruptedException {
+            Channel channel = createChannel(new UDPClientInitializer());
+            ChannelFuture future = null;
+            try {
+                InetSocketAddress localAddress = (InetSocketAddress) channel.localAddress();
+                future = write(channel, (new RegisterRequest(localAddress.getHostString(), localAddress.getPort(), username)), bootstrapIp, bootstrapPort);
+            } catch (InterruptedException e) {
+                logger.error(e.getMessage());
+                Thread.currentThread().interrupt();         // Interrupt should not be ignored.
+            }
+            return future;
+        }
 
 }
 ```
@@ -219,70 +239,6 @@ Updated TODOs can be found in [this link](https://github.com/uom-cse-realitix/di
     
     * Afterwards, we have to communicate with the neighbours returned by the BS. 
     
-    * For this, we need a UDP server listening in each node, which is modeled in `UDPServer.java` itself. Inside `UDPServerHandler` the `channelRead0` event should handle `JOIN` and other requests appropriately.
-    ```java
-    public class UDPServer {
-        private final Logger logger = LogManager.getLogger(UDPServer.class);
-        private String host;
-        private int port;
-    
-        private UDPServer(UDPServerBuilder builder) {
-            this.host = builder.host;
-            this.port = builder.port;
-        }
-    
-        /**
-         * Note: https://stackoverflow.com/questions/41505852/netty-closefuture-sync-channel-blocks-rest-api
-         * ServerBootstrap allows many client to connect via its channel. Therefore TCP has a dedicated ServerSocketChannel.
-         * Bootstrap is used to create channels for single connections. Because UDP has one channel for all clients it makes sense that only the Bootstrap is required. All clients bind to the same channel.
-         * @return the udp server
-         */
-        public Channel listen() {
-            Channel channel = null;
-            EventLoopGroup group = new NioEventLoopGroup();
-            Bootstrap b = new Bootstrap();
-            b.group(group)
-                    .channel(NioDatagramChannel.class)
-                    .option(ChannelOption.SO_BROADCAST, true)
-                    .handler(new UDPServerHandler());
-            try {
-                channel = b.bind(host, port).sync().channel(); // .sync().channel().closeFuture.await()
-                logger.info("WS UDP server listening to port: " + port);
-            } catch (InterruptedException e) {
-                logger.error(e.getMessage());
-            }
-            return channel;
-        }
-    
-        /**
-         * Builder class for the server
-         */
-        public static class UDPServerBuilder {
-            private String host;
-            private int port;
-    
-            private UDPServerBuilder() {}
-    
-            public static UDPServerBuilder newInstance() {
-                return new UDPServerBuilder();
-            }
-    
-            public UDPServerBuilder setHost(String host) {
-                this.host = host;
-                return this;
-            }
-    
-            public UDPServerBuilder setPort(int port) {
-                this.port = port;
-                return this;
-            }
-    
-            public UDPServer build() {
-                return new UDPServer(this);
-            }
-        }
-    }
-    ```    
 4. Why a `configuration.yaml`? Can't we just hardcode the information?
 
     * Having a serializable `.yaml` is the standard way of coding a component.

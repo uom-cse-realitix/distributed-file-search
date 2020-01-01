@@ -10,7 +10,6 @@ import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.util.CharsetUtil;
 import io.netty.util.internal.SocketUtils;
 import org.apache.log4j.Logger;
-import org.realitix.dfilesearch.filesearch.FileSearchExecutor;
 import org.realitix.dfilesearch.filesearch.beans.Node;
 import org.realitix.dfilesearch.filesearch.beans.messages.CommonMessage;
 import org.realitix.dfilesearch.filesearch.beans.messages.JoinRequest;
@@ -44,16 +43,6 @@ public class UDPClient {
         return b.bind(host, port).sync().channel();
     }
 
-    public ChannelFuture createChannel(String localIp, int localPort, ChannelInitializer<DatagramChannel> channelInitializer) throws InterruptedException {
-        Bootstrap b = new Bootstrap();
-        b.group(new NioEventLoopGroup())
-                .channel(NioDatagramChannel.class)
-                .option(ChannelOption.SO_KEEPALIVE, true)
-                .localAddress(localIp, localPort)
-                .handler(channelInitializer);
-        return b.bind(localIp, localPort).sync().await();
-    }
-
     /**
      * Runs the client socket
      * Registers the node with BS
@@ -73,22 +62,6 @@ public class UDPClient {
             Thread.currentThread().interrupt();         // Interrupt should not be ignored.
         }
         return future;
-    }
-
-    /**
-     * Sends the JOIN request to the neighbors
-     * @param neighbour1 first neighbour
-     * @param neighbour2 second neighbour
-     * @throws InterruptedException
-     */
-    public void join(Node neighbour1, Node neighbour2, Channel channel) throws InterruptedException {
-        neighbour1.setChannel(channel);
-        logger.info("First node: " + neighbour1.getIp() + ":" + neighbour1.getPort());
-        write(neighbour1.getChannel(), new JoinRequest(host, port), neighbour1.getIp(), neighbour1.getPort());
-        if (neighbour2 != null) {
-            neighbour2.setChannel(channel);
-            write(neighbour2.getChannel(), new JoinRequest(host, port), neighbour2.getIp(), neighbour2.getPort());
-        }
     }
 
     /**

@@ -13,9 +13,6 @@ import org.realitix.dfilesearch.filesearch.util.RequestParserImpl;
 import org.realitix.dfilesearch.filesearch.util.ResponseParser;
 import org.realitix.dfilesearch.filesearch.util.ResponseParserImpl;
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-
 /**
  * Handler for Client.
  * This handler is not stateful.
@@ -72,13 +69,10 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
      */
     private void processRequest(String request, ChannelHandlerContext ctx) {
         String command = request.split(" ")[1];
-        String[] split = request.split(" ");
         switch (command) {
             case "JOIN":
                 logger.info("JOIN MESSAGE RECEIVED.");
-                ctx.channel().writeAndFlush(new DatagramPacket(
-                        Unpooled.copiedBuffer(parseJoin(request), CharsetUtil.UTF_8),
-                        SocketUtils.socketAddress(split[2], Integer.parseInt(split[3]))));
+                parseJoin(request, ctx);
                 break;
             case "LEAVE":
                 logger.info("LEAVE MESSAGE RECEIVED.");
@@ -94,15 +88,17 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
     /**
      * Parses the join message and returns a response
      * SHOULD HAVE THE JOIN MESSAGE AS A PARAMETER, AND PARSE IT FOR CORRECTION.
-     * @return response for JOIN
      */
-    private String parseJoin(String request) {
+    private void parseJoin(String request, ChannelHandlerContext ctx) {
+        String response;        // ref counted string.
         int actualLength = request.length();
+        String[] split = request.split(" ");
         int length = Integer.parseInt(request.split(" ")[0]);
-        String response;
         if (actualLength == length) response = "0014 JOINOK 0";
         else response = "0016 JOINOK 9999";
-        return response;
+        ctx.channel().writeAndFlush(new DatagramPacket(
+                Unpooled.copiedBuffer(response, CharsetUtil.UTF_8),
+                SocketUtils.socketAddress(split[2], Integer.parseInt(split[3]))));
     }
 
 }

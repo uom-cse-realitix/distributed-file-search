@@ -8,10 +8,11 @@
 </head>
 <body>
     <div class="container">
-        <!-- Default form login -->
         <div class="text-center border border-light p-5">
             <p class="h4 mb-4">Enter your query here.</p>
-            <input type="text" id="command" class="form-control mb-4" placeholder="Query">
+            <label for="command">
+                <input type="text" id="command" class="form-control mb-4" placeholder="Query">
+            </label>
             <button class="btn btn-info btn-block my-4" onclick="execute()">Execute</button>
         </div>
     </div>
@@ -19,7 +20,7 @@
     <script>
         function execute() {
             let value = document.getElementById("command").value;
-            var xhr = new XMLHttpRequest();
+            const xhr = new XMLHttpRequest();
             xhr.open("POST", "/api/file/command", false);   // false for a synchronous operation
             xhr.setRequestHeader('Content-Type', 'application/json');
             console.log("Sending command: " + value);

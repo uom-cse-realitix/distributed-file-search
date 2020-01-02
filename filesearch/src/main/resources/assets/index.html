@@ -27,12 +27,10 @@
             document.getElementById("command").value = "";
         }
 
-        function updateCount() {
-            $("#characters").text($(this).val().length);
-        }
-
         $('#characters').text(0);
-        $('input[name="cmd"]').on('keyup keydown', updateCount);
+        $('input[name="cmd"]').on('keyup keydown', function () {
+            $("#characters").text($(this).val().length);
+        });
     </script>
 </body>
 </html>

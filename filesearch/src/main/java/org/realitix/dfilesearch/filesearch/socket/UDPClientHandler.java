@@ -1,22 +1,20 @@
 package org.realitix.dfilesearch.filesearch.socket;
 
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.*;
 
 import io.netty.channel.socket.DatagramPacket;
 import io.netty.util.CharsetUtil;
+import io.netty.util.internal.SocketUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.realitix.dfilesearch.filesearch.FileSearchExecutor;
-import org.realitix.dfilesearch.filesearch.beans.Node;
-import org.realitix.dfilesearch.filesearch.beans.messages.JoinRequest;
 import org.realitix.dfilesearch.filesearch.util.RequestParser;
 import org.realitix.dfilesearch.filesearch.util.RequestParserImpl;
 import org.realitix.dfilesearch.filesearch.util.ResponseParser;
 import org.realitix.dfilesearch.filesearch.util.ResponseParserImpl;
 
-import java.util.HashMap;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 
 /**
  * Handler for Client.
@@ -74,15 +72,20 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
      */
     private void processRequest(String request, ChannelHandlerContext ctx) {
         String command = request.split(" ")[1];
+        String[] split = request.split(" ");
         switch (command) {
             case "JOIN":
-                logger.info("JOIN MESSAGE RECEIVED");
-                ctx.writeAndFlush(parseJoin());
+                logger.info("JOIN MESSAGE RECEIVED.");
+                ctx.channel().writeAndFlush(new DatagramPacket(
+                        Unpooled.copiedBuffer(parseJoin(request), CharsetUtil.UTF_8),
+                        SocketUtils.socketAddress(split[2], Integer.parseInt(split[3]))));
                 break;
             case "LEAVE":
-                // log and process
+                logger.info("LEAVE MESSAGE RECEIVED.");
+                break;
             case "SER":
-                // log and process
+                logger.info("SER MESSAGE RECEIVED.");
+                break;
             default:
                 logger.error("Undetermined Request Message");
         }
@@ -91,34 +94,15 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
     /**
      * Parses the join message and returns a response
      * SHOULD HAVE THE JOIN MESSAGE AS A PARAMETER, AND PARSE IT FOR CORRECTION.
-     * TODO: If the message is correct, attach 0 as the value and else, attach 9999 as the value.
      * @return response for JOIN
      */
-    private String parseJoin() {
-        return "0014 JOINOK 0";
-    }
-
-    private void join(Channel channel) throws InterruptedException {
-        HashMap<Integer, Node> nodeMap = FileSearchExecutor.neighbourMap.getNodeMap();
-        UDPClient udpClient = FileSearchExecutor.getUdpClient();
-        int size = nodeMap.size();
-        String preAmble = "NodeMap size is: ";
-        switch (size) {
-            case 0:
-                logger.info(preAmble + size + ". Therefore, not calling JOIN.");
-                break;
-            case 1:
-                logger.info(preAmble + size + ". Therefore, calling JOIN.");
-                udpClient.write(channel, new JoinRequest(udpClient.getHost(), udpClient.getPort()), nodeMap.get(1).getIp(), nodeMap.get(1).getPort());
-                break;
-            case 2:
-                logger.info(preAmble + size + ". Therefore, calling JOIN.");
-                udpClient.write(channel, new JoinRequest(udpClient.getHost(), udpClient.getPort()), nodeMap.get(2).getIp(), nodeMap.get(2).getPort());
-                break;
-            default:
-                logger.error("Undefined JOIN");
-        }
-
+    private String parseJoin(String request) {
+        int actualLength = request.length();
+        int length = Integer.parseInt(request.split(" ")[0]);
+        String response;
+        if (actualLength == length) response = "0014 JOINOK 0";
+        else response = "0016 JOINOK 9999";
+        return response;
     }
 
 }

@@ -22,6 +22,9 @@ public class ResponseParserImpl implements ResponseParser<String>{
                 logger.info("Response FOR UNROK received.");
                 parseUnRegok(s);
                 break;
+            case "JOINOK":
+                logger.info("JOINOK Received.");
+                break;
             default:
                 logger.error("Passed to RequestParser.");
         }

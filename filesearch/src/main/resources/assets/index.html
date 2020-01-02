@@ -10,8 +10,9 @@
     <div class="container">
         <div class="text-center border border-light p-5">
             <p class="h4 mb-4">Enter your query here.</p>
-            <input type="text" id="command" class="form-control mb-4" placeholder="Query">
+            <input name="cmd" type="text" id="command" class="form-control mb-4" placeholder="Query">
             <button class="btn btn-info btn-block my-4" onclick="execute()">Execute</button>
+            <p>Length: <span id="characters"></span></p>
         </div>
     </div>
     <script src="js/bootstrap.min.js"></script>
@@ -25,6 +26,13 @@
             xhr.send(JSON.stringify({value: value}));
             document.getElementById("command").value = "";
         }
+
+        function updateCount() {
+            $("#characters").text($(this).val().length);
+        }
+
+        $('#characters').text(0);
+        $('input[name="cmd"]').on('keyup keydown', updateCount);
     </script>
 </body>
 </html>

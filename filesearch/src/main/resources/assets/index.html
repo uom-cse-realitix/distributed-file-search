@@ -4,20 +4,27 @@
     <meta charset="UTF-8">
     <title>Distributed File Search</title>
     <link rel="stylesheet" href="css/bootstrap.min.css">
+    <script src="js/jquery.min.js"></script>
 </head>
 <body>
     <div class="container">
         <!-- Default form login -->
-        <form class="text-center border border-light p-5" action="#!">
+        <div class="text-center border border-light p-5">
             <p class="h4 mb-4">Enter your query here.</p>
-            <input type="email" id="defaultLoginFormEmail" class="form-control mb-4" placeholder="Query">
+            <input type="text" id="command" class="form-control mb-4" placeholder="Query">
             <button class="btn btn-info btn-block my-4" onclick="execute()">Execute</button>
-        </form>
+        </div>
     </div>
     <script src="js/bootstrap.min.js"></script>
     <script>
         function execute() {
-            console.log("Fetch!")
+            let value = document.getElementById("command").value;
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/api/file/command", false);   // false for a synchronous operation
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            console.log("Sending command: " + value);
+            xhr.send(JSON.stringify({value: value}));
+            document.getElementById("command").value = "";
         }
     </script>
 </body>

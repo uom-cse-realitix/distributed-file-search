@@ -27,12 +27,7 @@ public class RequestParserImpl implements RequestParser<String> {
             switch (command) {
                 case "JOIN":
                     logger.info("JOIN message received");
-                    try {
-                        join(channel);
-                    } catch (InterruptedException e) {
-                        logger.error(e.getMessage());
-                        Thread.currentThread().interrupt();
-                    }
+
                     break;
                 default:
                     builder.append("ERROR");

@@ -46,7 +46,7 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
         String message = datagramPacket.content().toString(CharsetUtil.UTF_8);
         logger.info("Response message: " + message);
         processResponse(message);
-        requestParser.parse(message);
+        processRequest(message, channelHandlerContext);
     }
 
     @Override
@@ -65,6 +65,37 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
 
     private void processResponse(String string) {
         responseParser.parse(string);
+    }
+
+    /**
+     * Executes WHEN A MESSAGE IS RECEIVED.
+     * @param request join request
+     * @param ctx handler context of the channel
+     */
+    private void processRequest(String request, ChannelHandlerContext ctx) {
+        String command = request.split(" ")[1];
+        switch (command) {
+            case "JOIN":
+                logger.info("JOIN MESSAGE RECEIVED");
+                ctx.writeAndFlush(parseJoin());
+                break;
+            case "LEAVE":
+                // log and process
+            case "SER":
+                // log and process
+            default:
+                logger.error("Undetermined Request Message");
+        }
+    }
+
+    /**
+     * Parses the join message and returns a response
+     * SHOULD HAVE THE JOIN MESSAGE AS A PARAMETER, AND PARSE IT FOR CORRECTION.
+     * TODO: If the message is correct, attach 0 as the value and else, attach 9999 as the value.
+     * @return response for JOIN
+     */
+    private String parseJoin() {
+        return "0014 JOINOK 0";
     }
 
     private void join(Channel channel) throws InterruptedException {

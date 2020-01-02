@@ -139,6 +139,9 @@ bootstrapServer:           # bootstrap server details
 
 8. Testing `JOIN`: `0024 JOIN <IP> <PORT>`. Note the `<IP, PORT>` combination should be from a node joined later to the cluster.
 
+9. `Netty` has the new abstraction of a `Channel`, and for UDP communication, `NioDatagramSocket` initialization does not maintain the notion of a `connection`. A `Channel` is like a vehicle which transmmits a message. For an example, `ctx.writeAndFlush()` method, called upon a `NioDatagramChannel` does not write to a `connection`, but just packs up a `DatagramPacket`, which specifies its own destination. Check `write()` method in `UDPClient`.
+
+
 ```java
 public class UDPClient {
     // code

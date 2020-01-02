@@ -137,7 +137,7 @@ bootstrapServer:           # bootstrap server details
 
 7. Web interface at `/`, and api at `/api`. File is served at `/api/file/{fileName}`, and nodemap is served at `/api/file/map`.
 
-8. In `REG` request, the port sent is the `server` socket port.
+8. Testing `JOIN`: `0024 JOIN <IP> <PORT>`. Note the `<IP, PORT>` combination should be from a node joined later to the cluster.
 
 ```java
 public class UDPClient {

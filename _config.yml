@@ -1,3 +1,2 @@
 title: "Distributed P2P File Search"
-remote_theme: pmarsceill/just-the-docs
-search_enabled: true
+theme: jekyll-theme-architect

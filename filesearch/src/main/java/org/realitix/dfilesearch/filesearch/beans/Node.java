@@ -36,4 +36,13 @@ public class Node {
     public void setChannel(Channel channel) {
         this.channel = channel;
     }
+
+    @Override
+    public String toString() {
+        return "Node{" +
+                "ip='" + ip + '\'' +
+                ", port=" + port +
+                ", channel=" + channel +
+                '}';
+    }
 }

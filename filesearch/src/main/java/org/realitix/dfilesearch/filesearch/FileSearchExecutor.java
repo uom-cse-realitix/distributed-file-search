@@ -24,6 +24,7 @@ import org.realitix.dfilesearch.webservice.beans.FileResponse;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -33,6 +34,7 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
     private static Channel udpChannel;
     private FileExecutorConfiguration configuration;
     public static final NodeMap neighbourMap = new NodeMap();
+    public static final ArrayList<Node> joinMap = new ArrayList<>();
     private static final Logger logger = LogManager.getLogger(FileSearchExecutor.class);
 
     public static void main(String[] args) throws Exception {

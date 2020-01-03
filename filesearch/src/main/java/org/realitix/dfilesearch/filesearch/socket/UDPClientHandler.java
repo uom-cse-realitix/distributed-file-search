@@ -8,8 +8,8 @@ import io.netty.util.CharsetUtil;
 import io.netty.util.internal.SocketUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.realitix.dfilesearch.filesearch.util.RequestParser;
-import org.realitix.dfilesearch.filesearch.util.RequestParserImpl;
+import org.realitix.dfilesearch.filesearch.FileSearchExecutor;
+import org.realitix.dfilesearch.filesearch.beans.Node;
 import org.realitix.dfilesearch.filesearch.util.ResponseParser;
 import org.realitix.dfilesearch.filesearch.util.ResponseParserImpl;
 
@@ -23,13 +23,11 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
 
     private static Logger logger = LogManager.getLogger(UDPClientHandler.class);
     private final ResponseParser<String> responseParser;
-    private final RequestParser<String> requestParser;
     private Channel channel;
 
     public UDPClientHandler(Channel channel) {
         this.channel = channel;
         responseParser = new ResponseParserImpl();
-        requestParser = new RequestParserImpl(channel);
     }
 
     @Override
@@ -81,7 +79,7 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
                 logger.info("SER MESSAGE RECEIVED.");
                 break;
             default:
-                logger.error("Undetermined Request Message");
+                logger.error("Message passed to response handler.");
         }
     }
 
@@ -90,12 +88,18 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
      * SHOULD HAVE THE JOIN MESSAGE AS A PARAMETER, AND PARSE IT FOR CORRECTION.
      */
     private void parseJoin(String request, ChannelHandlerContext ctx) {
-        String response;        // ref counted string.
+        String response = "0016 JOINOK 9999";        // ref counted string.
         int actualLength = request.length();
         String[] split = request.split(" ");
         int length = Integer.parseInt(request.split(" ")[0]);
-        if (actualLength == length) response = "0014 JOINOK 0";
-        else response = "0016 JOINOK 9999";
+        if (actualLength == length){
+            response = "0014 JOINOK 0";
+            String ip = split[2];
+            int port = Integer.parseInt(split[3]);
+            Node joiningNode = new Node(ip, port);
+            FileSearchExecutor.joinMap.add(joiningNode);
+            logger.info("Node: " + joiningNode + " added to the joinMap.");
+        }
         ctx.channel().writeAndFlush(new DatagramPacket(
                 Unpooled.copiedBuffer(response, CharsetUtil.UTF_8),
                 SocketUtils.socketAddress(split[2], Integer.parseInt(split[3]))));

@@ -27,6 +27,7 @@ import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
 
@@ -34,15 +35,11 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
     private static Channel udpChannel;
     private FileExecutorConfiguration configuration;
     public static final NodeMap neighbourMap = new NodeMap();
-    public static final ArrayList<Node> joinMap = new ArrayList<>();
+    public static final List<Node> joinMap = new ArrayList<>();
     private static final Logger logger = LogManager.getLogger(FileSearchExecutor.class);
 
     public static void main(String[] args) throws Exception {
         new FileSearchExecutor().run(args);
-    }
-    @Override
-    public String getName() {
-        return super.getName();
     }
 
     @Override
@@ -63,11 +60,6 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
         logger.info("Enabling Web Service..");
         environment.jersey().setUrlPattern("/api/*");
         environment.jersey().register(new FileSharingResource());
-    }
-
-    @Override
-    public Class<FileExecutorConfiguration> getConfigurationClass() {
-        return super.getConfigurationClass();
     }
 
     private static UDPClient registerBackendClient(FileExecutorConfiguration configuration) {

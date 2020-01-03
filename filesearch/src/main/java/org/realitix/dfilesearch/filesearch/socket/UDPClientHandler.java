@@ -16,14 +16,14 @@ import org.realitix.dfilesearch.filesearch.util.ResponseParserImpl;
 /**
  * Handler for Client.
  * This handler is not stateful.
- * Read the docs: https://netty.io/wiki/new-and-noteworthy-in-4.0.html#wiki-h4-19
- * The pipeline is channelRegistered -> channelActive -> channelInactive -> channelUnregistered
+ * The order of events is channelRegistered -> channelActive -> channelInactive -> channelUnregistered
  */
 public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket> {
 
     private static Logger logger = LogManager.getLogger(UDPClientHandler.class);
     private final ResponseParser<String> responseParser;
     private Channel channel;
+    private enum REQUEST_TYPE {JOIN, LEAVE}
 
     public UDPClientHandler(Channel channel) {
         this.channel = channel;
@@ -70,22 +70,20 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
         switch (command) {
             case "JOIN":
                 logger.info("JOIN MESSAGE RECEIVED.");
-                parseJoin(request, ctx);
+                parseLeaveAndJoin(request, ctx, REQUEST_TYPE.JOIN);
                 break;
             case "LEAVE":
                 logger.info("LEAVE MESSAGE RECEIVED.");
+                parseLeaveAndJoin(request, ctx, REQUEST_TYPE.LEAVE);
                 break;
             case "SER":
                 logger.info("SER MESSAGE RECEIVED.");
                 break;
-            default:
-                logger.error("Message passed to response handler.");
         }
     }
 
     /**
      * Parses the join message and returns a response
-     * SHOULD HAVE THE JOIN MESSAGE AS A PARAMETER, AND PARSE IT FOR CORRECTION.
      */
     private void parseJoin(String request, ChannelHandlerContext ctx) {
         String response = "0016 JOINOK 9999";        // ref counted string.
@@ -105,4 +103,45 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
                 SocketUtils.socketAddress(split[2], Integer.parseInt(split[3]))));
     }
 
+    private void parseLeave(String request, ChannelHandlerContext ctx) {
+        String response = "0017 LEAVEOK 9999";        // ref counted string.
+        int actualLength = request.length();
+        String[] split = request.split(" ");
+        int length = Integer.parseInt(request.split(" ")[0]);
+        if (actualLength == length){
+            response = "0014 LEAVEOK 0";
+            String ip = split[2];
+            final int port = Integer.parseInt(split[3]);
+            FileSearchExecutor.joinMap.removeIf(node -> (node.getIp().equals(ip)) && (node.getPort() == port));
+        }
+        ctx.channel().writeAndFlush(new DatagramPacket(
+                Unpooled.copiedBuffer(response, CharsetUtil.UTF_8),
+                SocketUtils.socketAddress(split[2], Integer.parseInt(split[3]))));
+    }
+
+    private void parseLeaveAndJoin(String request, ChannelHandlerContext ctx, REQUEST_TYPE type) {
+        String response = null;
+        int actualLength = request.length();
+        String[] split = request.split(" ");
+        int length = Integer.parseInt(split[0]);
+        final String ip = split[2];
+        final int port = Integer.parseInt(split[3]);
+        if (type.equals(REQUEST_TYPE.JOIN)) {
+            response = "0014 JOINOK 0";
+            if (length == actualLength) {
+                Node node = new Node(ip, port);
+                FileSearchExecutor.joinMap.add(node);
+                logger.info("Node: " + node + " added to the joinMap.");
+            } else response = "0016 JOINOK 9999";
+        } else if (type.equals(REQUEST_TYPE.LEAVE)) {
+            response = "0017 LEAVEOK 9999";
+            if (length == actualLength) {
+                FileSearchExecutor.joinMap.removeIf(node -> (node.getIp().equals(ip)) && (node.getPort() == port));
+            } else response = "0017 LEAVEOK 9999";
+        }
+        assert response != null;
+        ctx.channel().writeAndFlush(new DatagramPacket(
+                Unpooled.copiedBuffer(response, CharsetUtil.UTF_8),
+                SocketUtils.socketAddress(split[2], Integer.parseInt(split[3]))));
+    }
 }

@@ -8,7 +8,6 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.views.ViewBundle;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.log4j.BasicConfigurator;
@@ -20,7 +19,6 @@ import org.realitix.dfilesearch.filesearch.beans.messages.JoinRequest;
 import org.realitix.dfilesearch.filesearch.configuration.FileExecutorConfiguration;
 import org.realitix.dfilesearch.filesearch.socket.UDPClient;
 import org.realitix.dfilesearch.filesearch.util.NodeMap;
-import org.realitix.dfilesearch.filesearch.util.ResponseParser;
 import org.realitix.dfilesearch.webservice.beans.FileResponse;
 
 import javax.ws.rs.*;
@@ -28,7 +26,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Map;
 
 public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
 
@@ -78,7 +75,8 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
                 .setUsername(configuration.getClient().getUsername())
                 .build(configuration);
         try {
-            udpChannel = client.register(configuration.getBootstrapServer().getHost(), configuration.getBootstrapServer().getPort()).sync().await().channel();
+            udpChannel = client.register(configuration.getBootstrapServer().getHost(),
+                    configuration.getBootstrapServer().getPort()).sync().await().channel();
         } catch (InterruptedException e) {
             logger.error(e.getMessage());
             Thread.currentThread().interrupt();
@@ -101,7 +99,7 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
      */
     @Path("/file")
     @Produces(MediaType.APPLICATION_JSON)
-    public static class FileSharingResource {
+    public class FileSharingResource {
 
         private final Logger logger = LogManager.getLogger(this.getClass());
 
@@ -158,7 +156,8 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
             switch (cmd) {
                 case "JOIN":
                     HashMap<Integer, Node> nodeMap = FileSearchExecutor.neighbourMap.getNodeMap();
-                    logger.info("NodeMap: " + Arrays.toString(FileSearchExecutor.neighbourMap.getNodeMap().entrySet().toArray()));
+                    logger.info("NodeMap: " +
+                            Arrays.toString(FileSearchExecutor.neighbourMap.getNodeMap().entrySet().toArray()));
                     if (nodeMap.size() != 0) {
                         for (int i = 1; i < nodeMap.size() + 1; i++) {
                             Node n1 = FileSearchExecutor.neighbourMap.getNodeMap().get(i);
@@ -174,6 +173,15 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
                             );
                         }
                     }
+                    break;
+                case "REG":
+                    FileExecutorConfiguration fseConfig = FileSearchExecutor.this.configuration;
+                    FileSearchExecutor
+                            .getUdpClient()
+                            .register(fseConfig.getBootstrapServer().getHost(), fseConfig.getBootstrapServer().getPort());
+                    break;
+                default:
+                    logger.error("Unknown command from the UI.");
             }
         }
     }

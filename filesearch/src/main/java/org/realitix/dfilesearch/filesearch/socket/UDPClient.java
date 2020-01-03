@@ -31,6 +31,15 @@ public class UDPClient {
         this.configuration = builder.configuration;
     }
 
+
+    /**
+     * Creates a channel abstraction on top of a socket.
+     * Uses NioDatagramChannel (for UDP), therefore no notion of a connection. Channel is only bound to a port.
+     * Channel acts as a vehicle which unreliably deliver DatagramPackets to their destinations.
+     * @param channelInitializer initializer of the channel.
+     * @return created channel.
+     * @throws InterruptedException interruptions
+     */
     public Channel createChannel(ChannelInitializer<DatagramChannel> channelInitializer) throws InterruptedException {
         Bootstrap b = new Bootstrap();
         b.group(new NioEventLoopGroup())

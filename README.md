@@ -12,6 +12,12 @@ A distributed methodology to search files in a system.
     <img src="docs/DistributedArchitecture.png" />
 </div>
 
+## A bit about UDP
+
+Clients and servers that communicate via a reliable channel (such as URL or socket) have a dedicated point-to-point channel between themselves (or at least the illusion of one). To communicate, they establish a connection, transmit the data, and then close down the connection. All data sent over the channel is received in the same order that it was sent. This is guaranteed by the channel.
+
+In contrast, applications that communicate via datagrams send and receive completely independent packets of information. These clients and servers do not have and do not need a dedicated point-to-point channel. The delivery of datagrams to its destination is not guaranteed, nor is the order of arrival ([Source](http://journals.ecs.soton.ac.uk/java/tutorial/networking/datagrams/definition.html)).
+
 ## Setting up in IntelliJ and running within Jetbrains environments
 
 First, we need to set up the commandline arguments. 

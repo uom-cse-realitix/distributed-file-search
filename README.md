@@ -78,6 +78,11 @@ INFO  [2019-12-25 03:10:59,490] org.realitix.dfilesearch.filesearch.socket.UDPCl
 
 This is the nature of the overlay network. The details of the two nodes responded by the bootstrap server are the neighbors to the incoming node.
 
+<div align="center">
+    <img src="docs/ui.png" />
+</div>
+
+**Note that you can log into a node's UI in its web server's port, as shown in the image above. From this, you can issue commands which eventually be delivered in UDP transports.**
 
 ## Running in independent nodes
 

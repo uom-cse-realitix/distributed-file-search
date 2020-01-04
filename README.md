@@ -269,6 +269,10 @@ Updated TODOs can be found in [this link](https://github.com/uom-cse-realitix/di
       <div align="center"> 
         <img src="https://netty.io/images/components.png" />
       </div>
+      
+        <div align="center"> 
+          <img src="docs/UDPClientHandler.png" />
+        </div>
      
     
 

@@ -23,6 +23,7 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
     private static Logger logger = LogManager.getLogger(UDPClientHandler.class);
     private final ResponseParser<String> responseParser;
     private Channel channel;
+
     private enum REQUEST_TYPE {JOIN, LEAVE}
 
     public UDPClientHandler(Channel channel) {
@@ -49,11 +50,12 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
     }
 
     @Override
-    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception { }
+    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
+    }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-       logger.info("Connection inactive..");
+        logger.info("Connection inactive..");
     }
 
     private void processResponse(String string) {
@@ -62,8 +64,9 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
 
     /**
      * Executes WHEN A MESSAGE IS RECEIVED.
+     *
      * @param request join request
-     * @param ctx handler context of the channel
+     * @param ctx     handler context of the channel
      */
     private void processRequest(String request, ChannelHandlerContext ctx) {
         String command = request.split(" ")[1];
@@ -90,7 +93,7 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
         int actualLength = request.length();
         String[] split = request.split(" ");
         int length = Integer.parseInt(request.split(" ")[0]);
-        if (actualLength == length){
+        if (actualLength == length) {
             response = "0014 JOINOK 0";
             String ip = split[2];
             int port = Integer.parseInt(split[3]);
@@ -108,7 +111,7 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
         int actualLength = request.length();
         String[] split = request.split(" ");
         int length = Integer.parseInt(request.split(" ")[0]);
-        if (actualLength == length){
+        if (actualLength == length) {
             response = "0014 LEAVEOK 0";
             String ip = split[2];
             final int port = Integer.parseInt(split[3]);

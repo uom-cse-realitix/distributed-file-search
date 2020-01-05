@@ -24,9 +24,9 @@ Since our system randomly assigns neighbors, it is an **Unstructured P2P**.
 
 ### Unstructured P2P
 
-Each node maintains an ad hoc list of neighbors. The resulting overlay resembles a random graph: an edge hu, v i exists only with a certain probability `P[<u, v>]`.
+Each node maintains an ad hoc list of neighbors. The resulting overlay resembles a random graph: an edge `<u, v>` exists only with a certain probability `P[<u, v>]`.
 
-* **Flooding**: issuing node u passes request for d to all neighbors. Request is ignored when receiving node had seen it before. Otherwise, v searches locally for d (recursively). May be limited by a Time-To-Live: a maximum number of hops.
+* **Flooding**: issuing node u passes request for d to all neighbors. Request is ignored when receiving node had seen it before. Otherwise, v searches locally for d (recursively). May be limited by a **Time-To-Live**: a maximum number of hops.
 
     * Limited Flooding (maximal number of forwarding)
     * Probabilistic flooding (flood only with a certain probability)

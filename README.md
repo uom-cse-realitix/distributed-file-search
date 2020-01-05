@@ -12,6 +12,27 @@ A distributed methodology to search files in a system.
     <img src="docs/DistributedArchitecture.png" />
 </div>
 
+## Theory behind P2P
+
+There are three types of P2P architectures.
+
+1. Structured P2P: Has a definite logical structure (e.g. ring, hypercube, etc.). The system provides an operation `LOOKUP(key)` which wil efficiently route the lookup request to the associated node (e.g. Chord System)
+2. Unstructured P2P: Doesn't have a definite stuture, i.e. a random overlay (two nodes are linked with probability p).
+3. Hybrid P2P: Some nodes in the cluster are appointed special functions in a well-organized fashion.
+
+Since our system randomly assigns neighbors, it is an **Unstructured P2P**.
+
+### Unstructured P2P
+
+Here, we can no longer lookup information deterministically, but will have to resort to _searching_.
+
+* **Flooding**: Node U sends a lookup query to all of its neighbors. A neighbor responds, or forwards (floods) the request. There are many variations.
+
+    * Limited Flooding (maximal number of forwarding)
+    * Probabilistic flooding (flood only with a certain probability)
+
+* **Random walk**: Randomly select a neighbor v. If v has the answer, it replies, otherwise v randomly selects one of its neighbors. One variation of this is parallel random walk, and works well with _replicated data_. 
+
 ## A bit about UDP
 
 Clients and servers that communicate via a reliable channel (such as URL or socket) have a dedicated point-to-point channel between themselves (or at least the illusion of one). To communicate, they establish a connection, transmit the data, and then close down the connection. All data sent over the channel is received in the same order that it was sent. This is guaranteed by the channel.

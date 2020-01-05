@@ -24,14 +24,14 @@ Since our system randomly assigns neighbors, it is an **Unstructured P2P**.
 
 ### Unstructured P2P
 
-Here, we can no longer lookup information deterministically, but will have to resort to _searching_.
+Each node maintains an ad hoc list of neighbors. The resulting overlay resembles a random graph: an edge hu, v i exists only with a certain probability `P[<u, v>]`.
 
-* **Flooding**: Node U sends a lookup query to all of its neighbors. A neighbor responds, or forwards (floods) the request. There are many variations.
+* **Flooding**: issuing node u passes request for d to all neighbors. Request is ignored when receiving node had seen it before. Otherwise, v searches locally for d (recursively). May be limited by a Time-To-Live: a maximum number of hops.
 
     * Limited Flooding (maximal number of forwarding)
     * Probabilistic flooding (flood only with a certain probability)
 
-* **Random walk**: Randomly select a neighbor v. If v has the answer, it replies, otherwise v randomly selects one of its neighbors. One variation of this is parallel random walk, and works well with _replicated data_. 
+* **Random walk**: issuing node u passes request for d to randomly chosen neighbor, v . If v does not have d, it forwards request to one of its randomly chosen neighbors, and so on.
 
 ## A bit about UDP
 

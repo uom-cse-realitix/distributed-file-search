@@ -85,43 +85,6 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
         }
     }
 
-    /**
-     * Parses the join message and returns a response
-     */
-    private void parseJoin(String request, ChannelHandlerContext ctx) {
-        String response = "0016 JOINOK 9999";        // ref counted string.
-        int actualLength = request.length();
-        String[] split = request.split(" ");
-        int length = Integer.parseInt(request.split(" ")[0]);
-        if (actualLength == length) {
-            response = "0014 JOINOK 0";
-            String ip = split[2];
-            int port = Integer.parseInt(split[3]);
-            Node joiningNode = new Node(ip, port);
-            FileSearchExecutor.joinMap.add(joiningNode);
-            logger.info("Node: " + joiningNode + " added to the joinMap.");
-        }
-        ctx.channel().writeAndFlush(new DatagramPacket(
-                Unpooled.copiedBuffer(response, CharsetUtil.UTF_8),
-                SocketUtils.socketAddress(split[2], Integer.parseInt(split[3]))));
-    }
-
-    private void parseLeave(String request, ChannelHandlerContext ctx) {
-        String response = "0017 LEAVEOK 9999";        // ref counted string.
-        int actualLength = request.length();
-        String[] split = request.split(" ");
-        int length = Integer.parseInt(request.split(" ")[0]);
-        if (actualLength == length) {
-            response = "0014 LEAVEOK 0";
-            String ip = split[2];
-            final int port = Integer.parseInt(split[3]);
-            FileSearchExecutor.joinMap.removeIf(node -> (node.getIp().equals(ip)) && (node.getPort() == port));
-        }
-        ctx.channel().writeAndFlush(new DatagramPacket(
-                Unpooled.copiedBuffer(response, CharsetUtil.UTF_8),
-                SocketUtils.socketAddress(split[2], Integer.parseInt(split[3]))));
-    }
-
     private void parseLeaveAndJoin(String request, ChannelHandlerContext ctx, REQUEST_TYPE type) {
         String response = null;
         int actualLength = request.length();
@@ -140,6 +103,7 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
             response = "0017 LEAVEOK 9999";
             if (length == actualLength) {
                 FileSearchExecutor.joinMap.removeIf(node -> (node.getIp().equals(ip)) && (node.getPort() == port));
+                logger.info("Node removed");
             } else response = "0017 LEAVEOK 9999";
         }
         assert response != null;

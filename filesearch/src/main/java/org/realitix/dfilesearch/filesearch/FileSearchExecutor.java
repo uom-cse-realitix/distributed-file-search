@@ -44,7 +44,7 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
 
     @Override
     public void initialize(Bootstrap<FileExecutorConfiguration> bootstrap) {
-        bootstrap.addBundle(new AssetsBundle("/assets/", "/" , "index.html"));
+        bootstrap.addBundle(new AssetsBundle("/assets/", "/", "index.html"));
         bootstrap.addBundle(new ViewBundle<FileExecutorConfiguration>());
     }
 
@@ -62,7 +62,7 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
         environment.jersey().register(new FileSharingResource());
     }
 
-    private static UDPClient registerBackendClient(FileExecutorConfiguration configuration) {
+    private static void registerBackendClient(FileExecutorConfiguration configuration) {
         final UDPClient client = UDPClient.UDPClientBuilder.newInstance()
                 .setHost(configuration.getClient().getHost())
                 .setPort(configuration.getClient().getPort())
@@ -76,7 +76,6 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
             Thread.currentThread().interrupt();
         }
         udpClient = client;
-        return client;
     }
 
     public static UDPClient getUdpClient() {
@@ -132,7 +131,7 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
             return r;
         }
 
-        private FileResponse synthesizeFile(String fileName){
+        private FileResponse synthesizeFile(String fileName) {
             logger.info("Synthesizing the file");
             String randomString = fileName + RandomStringUtils.randomAlphabetic(20).toUpperCase();
             int size = (int) ((Math.random() * ((10 - 2) + 1)) + 2);    // change this to a more random algorithm
@@ -166,6 +165,8 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
                                     FileSearchExecutor.neighbourMap.getNodeMap().get(i).getPort()
                             );
                         }
+                    } else {
+                        logger.info("First Node Joining.");
                     }
                     break;
                 case "REG":

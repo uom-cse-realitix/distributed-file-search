@@ -140,6 +140,14 @@ bootstrapServer:           # bootstrap server details
 
 * Send messages to UDP server: `echo -n "hello" | nc -4u localhost 9000`
 
+### REST API
+
+|     Endpoint    |                    Description                   |
+|:---------------:|:------------------------------------------------:|
+| `file/{fileName}` | Returns a randomly generated, hashed, file.      |
+| `file/map`        | Returns the `nodemap`, which stores the neighbors. |
+| `file/`fileList`   | Returns the initiated file list.                 |
+
 
 ## Notes
 

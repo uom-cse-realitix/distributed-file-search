@@ -24,7 +24,7 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
     private final ResponseParser<String> responseParser;
     private Channel channel;
 
-    private enum REQUEST_TYPE {JOIN, LEAVE}
+    private enum REQUEST_TYPE {JOIN, LEAVE, SER}
 
     public UDPClientHandler(Channel channel) {
         this.channel = channel;
@@ -81,6 +81,7 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
                 break;
             case "SER":
                 logger.info("SER MESSAGE RECEIVED.");
+                parseSer(request, ctx, REQUEST_TYPE.SER);
                 break;
         }
     }
@@ -110,5 +111,17 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
         ctx.channel().writeAndFlush(new DatagramPacket(
                 Unpooled.copiedBuffer(response, CharsetUtil.UTF_8),
                 SocketUtils.socketAddress(split[2], Integer.parseInt(split[3]))));
+    }
+
+    /**
+     * Parses the SER request for a file
+     * If the file is found, this host should respond with its socket credentials.
+     * @param request request string
+     * @param ctx channel context
+     * @param type type of the request
+     */
+    private void parseSer(String request, ChannelHandlerContext ctx, REQUEST_TYPE type) {
+        // parse SER request
+
     }
 }

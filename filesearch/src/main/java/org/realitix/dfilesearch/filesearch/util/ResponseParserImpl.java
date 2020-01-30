@@ -25,6 +25,9 @@ public class ResponseParserImpl implements ResponseParser<String>{
             case "JOINOK":
                 logger.info("JOINOK Received.");
                 break;
+            case "SEROK":
+                logger.info("SEROK Received");
+                break;
             default:
                 logger.error("Passed to RequestParser.");
         }

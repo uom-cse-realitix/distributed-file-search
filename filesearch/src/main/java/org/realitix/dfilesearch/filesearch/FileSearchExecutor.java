@@ -24,10 +24,7 @@ import org.realitix.dfilesearch.webservice.beans.FileResponse;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
 
@@ -37,6 +34,7 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
     public static final NodeMap neighbourMap = new NodeMap();
     public static final List<Node> joinMap = new ArrayList<>();
     private static final Logger logger = LogManager.getLogger(FileSearchExecutor.class);
+    private static List<String> fileList;
 
     public static void main(String[] args) throws Exception {
         new FileSearchExecutor().run(args);
@@ -44,6 +42,7 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
 
     @Override
     public void initialize(Bootstrap<FileExecutorConfiguration> bootstrap) {
+        fileList = initializeFileList();
         bootstrap.addBundle(new AssetsBundle("/assets/", "/", "index.html"));
         bootstrap.addBundle(new ViewBundle<FileExecutorConfiguration>());
     }
@@ -76,6 +75,43 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
             Thread.currentThread().interrupt();
         }
         udpClient = client;
+    }
+
+    private List<String> initializeFileList() {
+        List<String> list = Arrays.asList(
+                "Shadows",
+                "Sapiens",
+                "Deus",
+                "Tamed",
+                "Cosmos",
+                "OutgrowingGod",
+                "Habit",
+                "CosmicConnection",
+                "ThinkingFastAndSlow",
+                "MansSearchForMeaning",
+                "DragonsOfEden",
+                "SurelyYoureJoking",
+                "RedLimit",
+                "FutureOfHumanity",
+                "EinstinesCosmos",
+                "ThirdWave",
+                "SpinningMagnet",
+                "BookOfUniverses",
+                "12RulesForLife",
+                "ConstantsOfNature",
+                "PhysicsOfFuture",
+                "TwoSidesOfTheMoon",
+                "Money",
+                "OutgrowingGod",
+                "OnGovernment",
+                "OnOriginsOfSpecies"
+        );
+        Collections.shuffle(list);
+        return new ArrayList<>(new HashSet<>(list.subList(0, 5)));
+    }
+
+    public static List<String> getFileList() {
+        return fileList;
     }
 
     public static UDPClient getUdpClient() {
@@ -124,6 +160,20 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
                 r = Response.status(200)
                         .entity((new ObjectMapper())
                                 .writeValueAsString(FileSearchExecutor.neighbourMap.getNodeMap()))
+                        .build();
+            } catch (JsonProcessingException e) {
+                logger.error(e.getMessage());
+            }
+            return r;
+        }
+
+        @GET
+        @Path("/fileList")
+        public Response getFileList() {
+            Response r = null;
+            try {
+                r = Response.status(200)
+                        .entity((new ObjectMapper()).writeValueAsString(FileSearchExecutor.fileList))
                         .build();
             } catch (JsonProcessingException e) {
                 logger.error(e.getMessage());

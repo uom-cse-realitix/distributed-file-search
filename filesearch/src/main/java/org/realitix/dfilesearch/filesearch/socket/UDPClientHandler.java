@@ -156,13 +156,15 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
         List<String> fileList = FileSearchExecutor.getFileList();
         List<String> hashedRequests = FileSearchExecutor.getHashedRequests();
         String[] split = request.split(" ");
-        int hops = Integer.parseInt(split[5]);
+        int hops;
+        if (split.length > 4) hops = Integer.parseInt(split[5]);
+        else hops = FileSearchExecutor.getConfiguration().getHops();
         try {
+            // checks whether the file is in its file system
             String hashedRequest = RequestHasher.hash(request);
             if (!hashedRequests.contains(hashedRequest)) {
                 hashedRequests.add(hashedRequest);
-                // checks whether the file is in its file system
-                final Pattern pattern = Pattern.compile("\\b" + split[4] + "\\b");
+                final Pattern pattern = Pattern.compile(String.join("\\b", split[4], "\\b"));
                 List<String> matchedFiles = fileList
                         .stream()
                         .filter(file -> pattern.matcher(file).matches())
@@ -184,8 +186,8 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
                     ); // send the response
                 }
                 // proxies the request to the other nodes, only if this node has not gotten the request beforehand.
-                if (hops > 0) nodeMap.forEach(node -> write(ctx, propagateRequest(request), node.getIp(), node.getPort()));
             }
+            if (hops > 0) nodeMap.forEach(node -> write(ctx, propagateRequest(request), node.getIp(), node.getPort()));
         } catch (NoSuchAlgorithmException e) {
             logger.error(e.getMessage());
         }

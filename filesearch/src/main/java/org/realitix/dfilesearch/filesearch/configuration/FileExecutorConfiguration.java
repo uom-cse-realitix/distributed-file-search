@@ -18,6 +18,8 @@ public class FileExecutorConfiguration extends Configuration {
 
     private NodeConfiguration bootstrapServer;
 
+    private int hops;
+
     @JsonProperty
     public String getName() {
         return name;
@@ -44,4 +46,11 @@ public class FileExecutorConfiguration extends Configuration {
         this.bootstrapServer = bootstrapServer;
     }
 
+    public int getHops() {
+        return hops;
+    }
+
+    public void setHops(int hops) {
+        this.hops = hops;
+    }
 }

@@ -1,13 +1,12 @@
 package org.realitix.dfilesearch.filesearch.socket;
 
-import com.google.common.base.Predicates;
-import com.google.common.collect.Iterables;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 
 import io.netty.channel.socket.DatagramPacket;
 import io.netty.util.CharsetUtil;
 import io.netty.util.internal.SocketUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.realitix.dfilesearch.filesearch.FileSearchExecutor;
@@ -17,6 +16,7 @@ import org.realitix.dfilesearch.filesearch.util.ResponseParser;
 import org.realitix.dfilesearch.filesearch.util.ResponseParserImpl;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -140,7 +140,8 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
 
 
     /**
-     * Parses the SER request for a file
+     * Parses the SER request for a file'
+     * e.g. length SER IP port file_name hops
      * If the file is found, this host should respond with its socket credentials.
      * Use JoinMap instead of NeighborMap, to query the responded nodes. Nodes responded by the bootstrap server (captured in NeighborMap) might not be available.
      * split[2]: host IP, split[3]: host port, split[4]: file name
@@ -155,6 +156,7 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
         List<String> fileList = FileSearchExecutor.getFileList();
         List<String> hashedRequests = FileSearchExecutor.getHashedRequests();
         String[] split = request.split(" ");
+        int hops = Integer.parseInt(split[5]);
         try {
             String hashedRequest = RequestHasher.hash(request);
             if (!hashedRequests.contains(hashedRequest)) {
@@ -167,19 +169,64 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
                         .collect(Collectors.toList());
                 int fileCount = matchedFiles.size();    // no_of_files
                 if (fileCount != 0) {
+                    UDPClient client = FileSearchExecutor.getUdpClient();
                     write(
                             ctx,
-                            "",     // XXXX SEROK no_of_files IP port hops filename1 filename2
+                            synthesizeSerResponse(
+                                    client.getHost(),
+                                    client.getPort(),
+                                    fileCount,
+                                    hops,
+                                    matchedFiles
+                            ),     // XXXX SEROK no_of_files IP port hops filename1 filename2
                             split[2],
                             split[3]
                     ); // send the response
                 }
-                // TODO: synthesize the response message
                 // proxies the request to the other nodes, only if this node has not gotten the request beforehand.
-                nodeMap.forEach(node -> write(ctx, request, node.getIp(), node.getPort()));
+                if (hops > 0) nodeMap.forEach(node -> write(ctx, propagateRequest(request), node.getIp(), node.getPort()));
             }
         } catch (NoSuchAlgorithmException e) {
             logger.error(e.getMessage());
         }
+    }
+
+    /**
+     * Synthesizes a response for the request. Only in case a file is found in this particular node.
+     * @param hostIp IP of this node
+     * @param port port of this node
+     * @param noOfFiles number of files found w.r.t the regular pattern
+     * @param hops number of hops indicated in the request
+     * @param fileNames names of the matched files
+     * @return the response to be sent to the asking node
+     */
+    private String synthesizeSerResponse(String hostIp, int port, int noOfFiles, int hops, List<String> fileNames) {
+        String basicString = "SEROK" +
+                " " +
+                noOfFiles +
+                " " +
+                hostIp +
+                " " +
+                port +
+                " " +
+                hops +
+                " " +
+                StringUtils.join(fileNames, " ");
+        int length = basicString.length() + 5;
+        return length + " " + basicString;
+    }
+
+    /**
+     * Decrements the hops and returns the new request
+     * e.g. if the hops in the request is 5 (i.e. 5 more hops to be propagated), 5 - 1 = 4 hops are there after this node.
+     * Should be called if the number of hops in the request is larger than 0.
+     * @param request request which arrived at the node
+     * @return new request to be propogated
+     */
+    private String propagateRequest(String request) {
+        String[] split = request.split(" ");
+        int hops = Integer.parseInt(split[5]);
+        split[5] = Integer.toString(--hops);
+        return Arrays.toString(split);
     }
 }

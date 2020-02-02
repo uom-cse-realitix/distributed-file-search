@@ -32,9 +32,10 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
     private static Channel udpChannel;
     private FileExecutorConfiguration configuration;
     public static final NodeMap neighbourMap = new NodeMap();
-    public static final List<Node> joinMap = new ArrayList<>();
+    private static final List<Node> joinMap = new ArrayList<>();
     private static final Logger logger = LogManager.getLogger(FileSearchExecutor.class);
     private static List<String> fileList;
+    private static List<String> hashedRequests = new ArrayList<>();
 
     public static void main(String[] args) throws Exception {
         new FileSearchExecutor().run(args);
@@ -110,8 +111,16 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
         return new ArrayList<>(new HashSet<>(list.subList(0, 5)));
     }
 
+    public static List<String> getHashedRequests() {
+        return hashedRequests;
+    }
+
     public static List<String> getFileList() {
         return fileList;
+    }
+
+    public static List<Node> getJoinMap() {
+        return joinMap;
     }
 
     public static UDPClient getUdpClient() {

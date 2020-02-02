@@ -1,5 +1,7 @@
 package org.realitix.dfilesearch.filesearch.socket;
 
+import com.google.common.base.Predicates;
+import com.google.common.collect.Iterables;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 
@@ -10,8 +12,14 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.realitix.dfilesearch.filesearch.FileSearchExecutor;
 import org.realitix.dfilesearch.filesearch.beans.Node;
+import org.realitix.dfilesearch.filesearch.util.RequestHasher;
 import org.realitix.dfilesearch.filesearch.util.ResponseParser;
 import org.realitix.dfilesearch.filesearch.util.ResponseParserImpl;
+
+import java.security.NoSuchAlgorithmException;
+import java.util.List;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Handler for Client.
@@ -97,31 +105,81 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
             response = "0014 JOINOK 0";
             if (length == actualLength) {
                 Node node = new Node(ip, port);
-                FileSearchExecutor.joinMap.add(node);
+                FileSearchExecutor.getJoinMap().add(node);
                 logger.info("Node: " + node + " added to the joinMap.");
             } else response = "0016 JOINOK 9999";
         } else if (type.equals(REQUEST_TYPE.LEAVE)) {
             response = "0017 LEAVEOK 9999";
             if (length == actualLength) {
-                FileSearchExecutor.joinMap.removeIf(node -> (node.getIp().equals(ip)) && (node.getPort() == port));
+                FileSearchExecutor.getJoinMap().removeIf(node -> (node.getIp().equals(ip)) && (node.getPort() == port));
                 logger.info("Node removed");
             } else response = "0017 LEAVEOK 9999";
         }
         assert response != null;
-        ctx.channel().writeAndFlush(new DatagramPacket(
-                Unpooled.copiedBuffer(response, CharsetUtil.UTF_8),
-                SocketUtils.socketAddress(split[2], Integer.parseInt(split[3]))));
+        write(ctx, response, split[2], split[3]);
     }
+
+    /**
+     * Write to the socket
+     * @param ctx channel handler context
+     * @param message message to be written from the socket
+     * @param host destination IP
+     * @param port destination port
+     */
+    private void write(ChannelHandlerContext ctx, String message, String host, String port) {
+        ctx.channel().writeAndFlush(
+                new DatagramPacket(Unpooled.copiedBuffer(message, CharsetUtil.UTF_8),
+                        SocketUtils.socketAddress(host, Integer.parseInt(port))));
+    }
+
+    private void write(ChannelHandlerContext ctx, String message, String host, int port) {
+        ctx.channel().writeAndFlush(
+                new DatagramPacket(Unpooled.copiedBuffer(message, CharsetUtil.UTF_8),
+                        SocketUtils.socketAddress(host, port)));
+    }
+
 
     /**
      * Parses the SER request for a file
      * If the file is found, this host should respond with its socket credentials.
+     * Use JoinMap instead of NeighborMap, to query the responded nodes. Nodes responded by the bootstrap server (captured in NeighborMap) might not be available.
+     * split[2]: host IP, split[3]: host port, split[4]: file name
+     * When the file is found, the node having the file responds with its IP and file names it has stored.
      * @param request request string
      * @param ctx channel context
      * @param type type of the request
      */
-    private void parseSer(String request, ChannelHandlerContext ctx, REQUEST_TYPE type) {
+    private void parseSer(final String request, final ChannelHandlerContext ctx, REQUEST_TYPE type) {
         // parse SER request
-
+        List<Node> nodeMap = FileSearchExecutor.getJoinMap();
+        List<String> fileList = FileSearchExecutor.getFileList();
+        List<String> hashedRequests = FileSearchExecutor.getHashedRequests();
+        String[] split = request.split(" ");
+        try {
+            String hashedRequest = RequestHasher.hash(request);
+            if (!hashedRequests.contains(hashedRequest)) {
+                hashedRequests.add(hashedRequest);
+                // checks whether the file is in its file system
+                final Pattern pattern = Pattern.compile("\\b" + split[4] + "\\b");
+                List<String> matchedFiles = fileList
+                        .stream()
+                        .filter(file -> pattern.matcher(file).matches())
+                        .collect(Collectors.toList());
+                int fileCount = matchedFiles.size();    // no_of_files
+                if (fileCount != 0) {
+                    write(
+                            ctx,
+                            "",     // XXXX SEROK no_of_files IP port hops filename1 filename2
+                            split[2],
+                            split[3]
+                    ); // send the response
+                }
+                // TODO: synthesize the response message
+                // proxies the request to the other nodes, only if this node has not gotten the request beforehand.
+                nodeMap.forEach(node -> write(ctx, request, node.getIp(), node.getPort()));
+            }
+        } catch (NoSuchAlgorithmException e) {
+            logger.error(e.getMessage());
+        }
     }
 }

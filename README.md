@@ -131,6 +131,7 @@ ports:                     # client details
 bootstrapServer:           # bootstrap server details
   port: 55555
   host: 127.0.0.1
+hops: 10
 ```
 
 ### Netstat commands

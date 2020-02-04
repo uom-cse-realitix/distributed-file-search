@@ -94,6 +94,12 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
         }
     }
 
+    /**
+     * When a JOIN message arrives, processes it, puts the corresponding node into a joinMap, and sends the response
+     * @param request sent by the node
+     * @param ctx context
+     * @param type type of request
+     */
     private void parseLeaveAndJoin(String request, ChannelHandlerContext ctx, REQUEST_TYPE type) {
         String response = null;
         int actualLength = request.length();
@@ -192,7 +198,6 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
                     split[3]
             ); // send the response
         }
-        //  proxies the request to the other nodes, only if this node has not gotten the request beforehand.
          if (hops > 0) nodeMap.forEach(node -> write(ctx, propagateRequest(request), node.getIp(), node.getPort()));
     }
 

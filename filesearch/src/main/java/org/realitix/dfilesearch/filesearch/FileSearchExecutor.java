@@ -209,9 +209,16 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
             return fileResponse;
         }
 
+        /**
+         * Sends JOIN, and REG commands.
+         * Initiates SER command
+         * @param command the executing command
+         * @throws InterruptedException thread interruptions
+         */
         private void processCommands(String command) throws InterruptedException {
             String cmd = command.split(" ")[1];
             switch (cmd) {
+                // JOIN message is sent to each node in neighbor map.
                 case "JOIN":
                     HashMap<Integer, Node> nodeMap = FileSearchExecutor.neighbourMap.getNodeMap();
                     logger.info("NodeMap: " +
@@ -241,7 +248,7 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
                             .register(fseConfig.getBootstrapServer().getHost(), fseConfig.getBootstrapServer().getPort());
                     break;
                 case "SER":
-                    // do search operation
+                    // initiate search operation
                     break;
                 default:
                     logger.error("Unknown command from the UI.");

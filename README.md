@@ -39,6 +39,8 @@ Clients and servers that communicate via a reliable channel (such as URL or sock
 
 In contrast, applications that communicate via datagrams send and receive completely independent packets of information. These clients and servers do not have and do not need a dedicated point-to-point channel. The delivery of datagrams to its destination is not guaranteed, nor is the order of arrival ([Source](http://journals.ecs.soton.ac.uk/java/tutorial/networking/datagrams/definition.html)).
 
+## Flow of this project
+
 <div align="center">
     <img src="docs/DAflow.png" />
 </div>

@@ -235,10 +235,13 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
                     }
                     break;
                 case "REG":
-                    FileExecutorConfiguration fseConfig = FileSearchExecutor.this.configuration;
+                    FileExecutorConfiguration fseConfig = FileSearchExecutor.configuration;
                     FileSearchExecutor
                             .getUdpClient()
                             .register(fseConfig.getBootstrapServer().getHost(), fseConfig.getBootstrapServer().getPort());
+                    break;
+                case "SER":
+                    // do search operation
                     break;
                 default:
                     logger.error("Unknown command from the UI.");

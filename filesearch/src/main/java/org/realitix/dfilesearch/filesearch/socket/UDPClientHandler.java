@@ -162,35 +162,38 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
         try {
             // checks whether the file is in its file system
             String hashedRequest = RequestHasher.hash(request);
+            // checks whether the node has served the same request before
             if (!hashedRequests.contains(hashedRequest)) {
                 hashedRequests.add(hashedRequest);
-                final Pattern pattern = Pattern.compile(String.join("\\b", split[4], "\\b"));
-                List<String> matchedFiles = fileList
-                        .stream()
-                        .filter(file -> pattern.matcher(file).matches())
-                        .collect(Collectors.toList());
-                int fileCount = matchedFiles.size();    // no_of_files
-                if (fileCount != 0) {
-                    UDPClient client = FileSearchExecutor.getUdpClient();
-                    write(
-                            ctx,
-                            synthesizeSerResponse(
-                                    client.getHost(),
-                                    client.getPort(),
-                                    fileCount,
-                                    hops,
-                                    matchedFiles
-                            ),     // XXXX SEROK no_of_files IP port hops filename1 filename2
-                            split[2],
-                            split[3]
-                    ); // send the response
-                }
-                // proxies the request to the other nodes, only if this node has not gotten the request beforehand.
+                // might have to store the response in order to get use of these hashed requests. Temporarily, we'll ignore.
             }
-            if (hops > 0) nodeMap.forEach(node -> write(ctx, propagateRequest(request), node.getIp(), node.getPort()));
         } catch (NoSuchAlgorithmException e) {
             logger.error(e.getMessage());
         }
+        final Pattern pattern = Pattern.compile(String.join("\\b",
+                split[4], "\\b"));
+        List<String> matchedFiles = fileList
+                .stream()
+                .filter(file -> pattern.matcher(file).matches())
+                .collect(Collectors.toList());
+        int fileCount = matchedFiles.size();    // no_of_files
+        if (fileCount != 0) {
+            UDPClient client = FileSearchExecutor.getUdpClient();
+            write(
+                    ctx,
+                    synthesizeSerResponse(
+                            client.getHost(),
+                            client.getPort(),
+                            fileCount,
+                            hops,
+                            matchedFiles
+                    ),     // XXXX SEROK no_of_files IP port hops filename1 filename2
+                    split[2],
+                    split[3]
+            ); // send the response
+        }
+        //  proxies the request to the other nodes, only if this node has not gotten the request beforehand.
+         if (hops > 0) nodeMap.forEach(node -> write(ctx, propagateRequest(request), node.getIp(), node.getPort()));
     }
 
     /**

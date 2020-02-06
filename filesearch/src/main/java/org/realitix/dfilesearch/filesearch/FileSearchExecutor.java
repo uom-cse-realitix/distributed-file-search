@@ -7,14 +7,22 @@ import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.views.ViewBundle;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.socket.DatagramPacket;
+import io.netty.util.CharsetUtil;
+import io.netty.util.internal.SocketUtils;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.realitix.dfilesearch.filesearch.beans.Node;
 import org.realitix.dfilesearch.filesearch.beans.UserInterfaceBean;
+import org.realitix.dfilesearch.filesearch.beans.messages.CommonMessage;
 import org.realitix.dfilesearch.filesearch.beans.messages.JoinRequest;
 import org.realitix.dfilesearch.filesearch.configuration.FileExecutorConfiguration;
 import org.realitix.dfilesearch.filesearch.socket.UDPClient;
@@ -25,6 +33,8 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
 
@@ -209,9 +219,55 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
             return fileResponse;
         }
 
+        public ChannelFuture write(Channel channel, String message, String remoteIp, int remotePort)
+                throws InterruptedException {
+            return channel.writeAndFlush(new DatagramPacket(Unpooled.copiedBuffer(message, CharsetUtil.UTF_8),
+                    SocketUtils.socketAddress(remoteIp, remotePort))).sync().await();
+        }
+
+        /**
+         * Synthesizes a response for the request. Only in case a file is found in this particular node.
+         * @param hostIp IP of this node
+         * @param port port of this node
+         * @param noOfFiles number of files found w.r.t the regular pattern
+         * @param hops number of hops indicated in the request
+         * @param fileNames names of the matched files
+         * @return the response to be sent to the asking node
+         */
+        private String synthesizeSerResponse(String hostIp, int port, int noOfFiles, int hops, List<String> fileNames) {
+            String basicString = "SEROK" +
+                    " " +
+                    noOfFiles +
+                    " " +
+                    hostIp +
+                    " " +
+                    port +
+                    " " +
+                    hops +
+                    " " +
+                    StringUtils.join(fileNames, " ");
+            int length = basicString.length() + 5;
+            return length + " " + basicString;
+        }
+
+        /**
+         * Decrements the hops and returns the new request
+         * e.g. if the hops in the request is 5 (i.e. 5 more hops to be propagated), 5 - 1 = 4 hops are there after this node.
+         * Should be called if the number of hops in the request is larger than 0.
+         * @param request request which arrived at the node
+         * @return new request to be propogated
+         */
+        private String propagateRequest(String request) {
+            String[] split = request.split(" ");
+            int hops = Integer.parseInt(split[5]);
+            split[5] = Integer.toString(--hops);
+            return Arrays.toString(split);
+        }
+
         /**
          * Sends JOIN, and REG commands.
          * Initiates SER command
+         * Cognitive complexity of this method is high. Refactor it according to definitions (https://www.sonarsource.com/docs/CognitiveComplexity.pdf)
          * @param command the executing command
          * @throws InterruptedException thread interruptions
          */
@@ -248,7 +304,36 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
                             .register(fseConfig.getBootstrapServer().getHost(), fseConfig.getBootstrapServer().getPort());
                     break;
                 case "SER":
-                    // initiate search operation
+                    String[] split = command.split(" ");
+                    int hops = 0;
+                    if (split.length > 4) hops = Integer.parseInt(split[5]);
+                    final Pattern pattern = Pattern.compile(String.join("\\b",
+                            split[4], "\\b"));
+                        List<String> matchedFiles = fileList
+                                .stream()
+                                .filter(file -> pattern.matcher(file).matches())
+                                .collect(Collectors.toList());
+                        int fileCount = matchedFiles.size();
+                        if (fileCount != 0) {
+                            write(udpChannel, synthesizeSerResponse(
+                                    udpClient.getHost(),
+                                    udpClient.getPort(),
+                                    fileCount,
+                                    0,
+                                    matchedFiles),
+                                    split[2],
+                                    Integer.parseInt(split[3]));
+                        }
+                        if (hops > 0) joinMap.forEach(
+                            node -> {
+                                try {
+                                    write(udpChannel, propagateRequest(command), node.getIp(), node.getPort());
+                                } catch (InterruptedException e) {
+                                    logger.error(e.getMessage());
+                                    Thread.currentThread().interrupt();
+                                }
+                            }
+                        );
                     break;
                 default:
                     logger.error("Unknown command from the UI.");

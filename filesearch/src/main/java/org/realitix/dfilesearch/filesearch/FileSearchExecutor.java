@@ -32,6 +32,7 @@ import org.realitix.dfilesearch.webservice.beans.FileResponse;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.sql.Array;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -64,6 +65,7 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
         configuration = fileExecutorConfiguration;
         registerBackendClient(fileExecutorConfiguration);
         startWebService(environment);
+        fileList.forEach(logger::info);
     }
 
     private void startWebService(Environment environment) {
@@ -81,6 +83,7 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
         try {
             udpChannel = client.register(configuration.getBootstrapServer().getHost(),
                     configuration.getBootstrapServer().getPort()).sync().await().channel();
+//            client.join(udpChannel, neighbourMap, client.getHost(), client.getPort());
         } catch (InterruptedException e) {
             logger.error(e.getMessage());
             Thread.currentThread().interrupt();
@@ -332,16 +335,29 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
                                     split[2],
                                     Integer.parseInt(split[3]));
                         }
-                        if (hops > 0) joinMap.forEach(
-                            node -> {
-                                try {
-                                    write(udpChannel, propagateRequest(command), node.getIp(), node.getPort());
-                                } catch (InterruptedException e) {
-                                    logger.error(e.getMessage());
-                                    Thread.currentThread().interrupt();
-                                }
-                            }
-                        );
+                        final String propagateRequest = propagateRequest(command);
+                        logger.info("Request propogate: " + propagateRequest);
+                        if (hops > 0) {
+                            joinMap.forEach(
+                                    node -> {
+                                        try {
+                                            write(udpChannel, propagateRequest, node.getIp(), node.getPort());
+                                        } catch (InterruptedException e) {
+                                            logger.error(e.getMessage());
+                                            Thread.currentThread().interrupt();
+                                        }
+                                    }
+                            );
+                            FileSearchExecutor.neighbourMap.getNodeMap()
+                                    .forEach((id, node) -> {
+                                        try {
+                                            write(udpChannel, propagateRequest, node.getIp(), node.getPort());
+                                        } catch (InterruptedException e) {
+                                            logger.error(e.getMessage());
+                                            Thread.currentThread().interrupt();
+                                        }
+                                    });
+                        }
                     break;
                 default:
                     logger.error("Unknown command from the UI.");

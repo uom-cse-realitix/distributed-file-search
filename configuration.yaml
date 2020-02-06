@@ -14,4 +14,4 @@ client:
 bootstrapServer:
   port: 55555
   host: 127.0.0.1
-hops: 10
+hops: 4

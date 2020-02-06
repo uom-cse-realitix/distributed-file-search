@@ -11,8 +11,10 @@ import io.netty.util.CharsetUtil;
 import io.netty.util.internal.SocketUtils;
 import org.apache.log4j.Logger;
 import org.realitix.dfilesearch.filesearch.beans.messages.CommonMessage;
+import org.realitix.dfilesearch.filesearch.beans.messages.JoinRequest;
 import org.realitix.dfilesearch.filesearch.beans.messages.RegisterRequest;
 import org.realitix.dfilesearch.filesearch.configuration.FileExecutorConfiguration;
+import org.realitix.dfilesearch.filesearch.util.NodeMap;
 
 import java.net.InetSocketAddress;
 
@@ -72,6 +74,18 @@ public class UDPClient {
             Thread.currentThread().interrupt();         // Interrupt should not be ignored.
         }
         return future;
+    }
+
+    public void join(Channel channel, NodeMap nodeMap, String hostIp, int hostPort) {
+        nodeMap.getNodeMap().forEach((id, node) -> {
+            try {
+                write(channel, new JoinRequest(hostIp, hostPort), node.getIp(), node.getPort());
+            } catch (InterruptedException e) {
+                logger.error(e.getMessage());
+                Thread.currentThread().interrupt();
+            }
+        });
+
     }
 
     /**

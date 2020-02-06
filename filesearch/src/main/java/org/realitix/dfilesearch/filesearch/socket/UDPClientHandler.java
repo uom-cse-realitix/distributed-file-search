@@ -198,7 +198,11 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
                     split[3]
             ); // send the response
         }
-         if (hops > 0) nodeMap.forEach(node -> write(ctx, propagateRequest(request), node.getIp(), node.getPort()));
+         if (hops > 0) {
+             nodeMap.forEach(node -> write(ctx, propagateRequest(request), node.getIp(), node.getPort()));
+             FileSearchExecutor.neighbourMap.getNodeMap().forEach((id, node) ->
+                     write(ctx, propagateRequest(request), node.getIp(), node.getPort()));
+         }
     }
 
     /**
@@ -237,6 +241,11 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
         String[] split = request.split(" ");
         int hops = Integer.parseInt(split[5]);
         split[5] = Integer.toString(--hops);
-        return Arrays.toString(split);
+        StringBuilder builder = new StringBuilder();
+        for (String s : split) {
+            builder.append(" ");
+            builder.append(s);
+        }
+        return builder.toString().substring(1);
     }
 }

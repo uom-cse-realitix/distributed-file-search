@@ -221,6 +221,7 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
 
         public ChannelFuture write(Channel channel, String message, String remoteIp, int remotePort)
                 throws InterruptedException {
+            logger.info("Sending write to: " + remoteIp + ":" + remotePort);
             return channel.writeAndFlush(new DatagramPacket(Unpooled.copiedBuffer(message, CharsetUtil.UTF_8),
                     SocketUtils.socketAddress(remoteIp, remotePort))).sync().await();
         }
@@ -261,7 +262,12 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
             String[] split = request.split(" ");
             int hops = Integer.parseInt(split[5]);
             split[5] = Integer.toString(--hops);
-            return Arrays.toString(split);
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < split.length; ++i) {
+                builder.append(" ");
+                builder.append(split[i]);
+            }
+            return builder.toString().substring(1);
         }
 
         /**
@@ -304,6 +310,7 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
                             .register(fseConfig.getBootstrapServer().getHost(), fseConfig.getBootstrapServer().getPort());
                     break;
                 case "SER":
+                    logger.info("SER command identified");
                     String[] split = command.split(" ");
                     int hops = 0;
                     if (split.length > 4) hops = Integer.parseInt(split[5]);
@@ -315,6 +322,7 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
                                 .collect(Collectors.toList());
                         int fileCount = matchedFiles.size();
                         if (fileCount != 0) {
+                            logger.info("File matched!");
                             write(udpChannel, synthesizeSerResponse(
                                     udpClient.getHost(),
                                     udpClient.getPort(),    // this port needs to be the web port

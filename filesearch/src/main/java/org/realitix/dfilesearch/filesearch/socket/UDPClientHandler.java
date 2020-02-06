@@ -189,7 +189,7 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
                     ctx,
                     synthesizeSerResponse(
                             client.getHost(),
-                            client.getPort(),
+                            client.getPort(),   // this port needs to be the web port
                             fileCount,
                             hops,
                             matchedFiles

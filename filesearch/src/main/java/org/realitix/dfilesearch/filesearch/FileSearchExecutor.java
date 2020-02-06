@@ -317,7 +317,7 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
                         if (fileCount != 0) {
                             write(udpChannel, synthesizeSerResponse(
                                     udpClient.getHost(),
-                                    udpClient.getPort(),
+                                    udpClient.getPort(),    // this port needs to be the web port
                                     fileCount,
                                     0,
                                     matchedFiles),

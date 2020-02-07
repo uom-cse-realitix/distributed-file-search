@@ -344,7 +344,7 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
                             logger.info("File matched!");
                             write(udpChannel, synthesizeSerResponse(
                                     udpClient.getHost(),
-                                    udpClient.getPort(),    // this port needs to be the web port
+                                    udpClient.getConfiguration().getWebPort(),    // this port needs to be the web port
                                     fileCount,
                                     0,
                                     matchedFiles),

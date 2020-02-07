@@ -126,6 +126,10 @@ public class UDPClient {
         this.username = username;
     }
 
+    public FileExecutorConfiguration getConfiguration() {
+        return configuration;
+    }
+
     /**
      * Builder class for the client
      */

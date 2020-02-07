@@ -15,3 +15,4 @@ bootstrapServer:
   port: 55555
   host: 127.0.0.1
 hops: 4
+webPort: 8095

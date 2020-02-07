@@ -20,6 +20,8 @@ public class FileExecutorConfiguration extends Configuration {
 
     private int hops;
 
+    private int webPort;
+
     @JsonProperty
     public String getName() {
         return name;
@@ -52,5 +54,13 @@ public class FileExecutorConfiguration extends Configuration {
 
     public void setHops(int hops) {
         this.hops = hops;
+    }
+
+    public int getWebPort() {
+        return webPort;
+    }
+
+    public void setWebPort(int webPort) {
+        this.webPort = webPort;
     }
 }

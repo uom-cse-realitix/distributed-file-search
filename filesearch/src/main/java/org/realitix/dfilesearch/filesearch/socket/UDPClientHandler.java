@@ -186,9 +186,9 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
             UDPClient client = FileSearchExecutor.getUdpClient();
             write(
                     ctx,
-                    synthesizeSerResponse(
+                    synthesizeSerResponse(      // creates SEROK
                             client.getHost(),
-                            client.getPort(),   // this port needs to be the web port
+                            client.getConfiguration().getWebPort(),   // this port needs to be the web port
                             fileCount,
                             hops,
                             matchedFiles
@@ -226,7 +226,7 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
                 " " +
                 StringUtils.join(fileNames, " ");
         int length = basicString.length() + 5;
-        return length + " " + basicString;
+        return "00" + length + " " + basicString;
     }
 
     /**

@@ -10,6 +10,7 @@ import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.util.CharsetUtil;
 import io.netty.util.internal.SocketUtils;
 import org.apache.log4j.Logger;
+import org.realitix.dfilesearch.filesearch.beans.Node;
 import org.realitix.dfilesearch.filesearch.beans.messages.CommonMessage;
 import org.realitix.dfilesearch.filesearch.beans.messages.JoinRequest;
 import org.realitix.dfilesearch.filesearch.beans.messages.RegisterRequest;
@@ -17,6 +18,8 @@ import org.realitix.dfilesearch.filesearch.configuration.FileExecutorConfigurati
 import org.realitix.dfilesearch.filesearch.util.NodeMap;
 
 import java.net.InetSocketAddress;
+import java.util.Arrays;
+import java.util.Iterator;
 
 public class UDPClient {
 
@@ -76,16 +79,13 @@ public class UDPClient {
         return future;
     }
 
-    public void join(Channel channel, NodeMap nodeMap, String hostIp, int hostPort) {
-        nodeMap.getNodeMap().forEach((id, node) -> {
-            try {
-                write(channel, new JoinRequest(hostIp, hostPort), node.getIp(), node.getPort());
-            } catch (InterruptedException e) {
-                logger.error(e.getMessage());
-                Thread.currentThread().interrupt();
-            }
-        });
-
+    public void join(Channel channel, NodeMap nodeMap, String hostIp, int hostPort) throws InterruptedException {
+        logger.info("----- JOINING NODEMAP OF SIZE" + nodeMap.getNodeMap().size() + " ------");
+        for (java.util.Map.Entry<Integer, Node> integerNodeEntry : nodeMap.getNodeMap().entrySet()) {
+            Node node = (Node) integerNodeEntry;
+            write(channel, new JoinRequest(hostIp, hostPort), node.getIp(), node.getPort());
+        }
+        logger.info("----- END OF JOINING ------");
     }
 
     /**

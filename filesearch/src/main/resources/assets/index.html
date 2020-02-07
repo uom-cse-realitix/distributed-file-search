@@ -11,6 +11,7 @@
         <div class="text-center border border-light p-5">
             <p class="h4 mb-4">Enter your query here.</p>
             <input name="cmd" type="text" id="command" class="form-control mb-4" placeholder="Query">
+            <button class="btn btn-default btn-block my-4" onclick="join()">Join</button>
             <button class="btn btn-info btn-block my-4" onclick="execute()">Execute</button>
             <p>Length: <span id="characters"></span></p>
         </div>
@@ -25,6 +26,13 @@
             console.log("Sending command: " + value);
             xhr.send(JSON.stringify({value: value}));
             document.getElementById("command").value = "";
+        }
+
+        function join() {
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", "/api/file/join", false);   // false for a synchronous operation
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send();
         }
 
         $('#characters').text(0);

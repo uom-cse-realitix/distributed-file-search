@@ -181,6 +181,13 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
         }
 
         @GET
+        @Path("/join")
+        public Response sendJoin() {
+            join();
+            return Response.status(201).build();
+        }
+
+            @GET
         @Path("/map")
         public Response getNodeMap() {
             Response r = null;
@@ -207,6 +214,34 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
                 logger.error(e.getMessage());
             }
             return r;
+        }
+
+        private void join() {
+            try {
+                HashMap<Integer, Node> nodeMap = FileSearchExecutor.neighbourMap.getNodeMap();
+                logger.info("NodeMap: " +
+                        Arrays.toString(FileSearchExecutor.neighbourMap.getNodeMap().entrySet().toArray()));
+                if (nodeMap.size() != 0) {
+                    for (int i = 1; i < nodeMap.size() + 1; i++) {
+                        Node n1 = FileSearchExecutor.neighbourMap.getNodeMap().get(i);
+                        logger.info("Sending JOIN to node: " + n1.getPort());
+                        FileSearchExecutor.getUdpClient().write(
+                                FileSearchExecutor.udpChannel,
+                                new JoinRequest(
+                                        FileSearchExecutor.getUdpClient().getHost(),
+                                        FileSearchExecutor.getUdpClient().getPort()
+                                ),
+                                FileSearchExecutor.neighbourMap.getNodeMap().get(i).getIp(),
+                                FileSearchExecutor.neighbourMap.getNodeMap().get(i).getPort()
+                        );
+                    }
+                } else {
+                    logger.info("First Node Joining.");
+                }
+            } catch (InterruptedException e) {
+                logger.error(e.getMessage());
+                Thread.currentThread().interrupt();
+            }
         }
 
         private FileResponse synthesizeFile(String fileName) {
@@ -285,26 +320,7 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
             switch (cmd) {
                 // JOIN message is sent to each node in neighbor map.
                 case "JOIN":
-                    HashMap<Integer, Node> nodeMap = FileSearchExecutor.neighbourMap.getNodeMap();
-                    logger.info("NodeMap: " +
-                            Arrays.toString(FileSearchExecutor.neighbourMap.getNodeMap().entrySet().toArray()));
-                    if (nodeMap.size() != 0) {
-                        for (int i = 1; i < nodeMap.size() + 1; i++) {
-                            Node n1 = FileSearchExecutor.neighbourMap.getNodeMap().get(i);
-                            logger.info("Sending JOIN to node: " + n1.getPort());
-                            FileSearchExecutor.getUdpClient().write(
-                                    FileSearchExecutor.udpChannel,
-                                    new JoinRequest(
-                                            FileSearchExecutor.getUdpClient().getHost(),
-                                            FileSearchExecutor.getUdpClient().getPort()
-                                    ),
-                                    FileSearchExecutor.neighbourMap.getNodeMap().get(i).getIp(),
-                                    FileSearchExecutor.neighbourMap.getNodeMap().get(i).getPort()
-                            );
-                        }
-                    } else {
-                        logger.info("First Node Joining.");
-                    }
+                    join();
                     break;
                 case "REG":
                     FileExecutorConfiguration fseConfig = FileSearchExecutor.configuration;

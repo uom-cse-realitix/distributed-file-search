@@ -16,7 +16,6 @@ import org.realitix.dfilesearch.filesearch.util.ResponseParser;
 import org.realitix.dfilesearch.filesearch.util.ResponseParserImpl;
 
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -46,13 +45,13 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
 
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, DatagramPacket datagramPacket) {
         String message = datagramPacket.content().toString(CharsetUtil.UTF_8);
-        logger.info("Response message: " + message);
+        logger.info("Socket message: " + message);
         processResponse(message);
         processRequest(message, channelHandlerContext);
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause ) {
         logger.error(cause.getMessage());
         ctx.channel().close();
     }

@@ -58,6 +58,7 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
 
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
+        // implement
     }
 
     @Override
@@ -124,7 +125,7 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
             } else response = "0017 LEAVEOK 9999";
         }
         assert response != null;
-        write(ctx, response, split[2], split[3]);
+        write(ctx, response, split[2], Integer.parseInt(split[3]));
     }
 
     /**
@@ -134,12 +135,6 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
      * @param host destination IP
      * @param port destination port
      */
-    private void write(ChannelHandlerContext ctx, String message, String host, String port) {
-        ctx.channel().writeAndFlush(
-                new DatagramPacket(Unpooled.copiedBuffer(message, CharsetUtil.UTF_8),
-                        SocketUtils.socketAddress(host, Integer.parseInt(port))));
-    }
-
     private void write(ChannelHandlerContext ctx, String message, String host, int port) {
         ctx.channel().writeAndFlush(
                 new DatagramPacket(Unpooled.copiedBuffer(message, CharsetUtil.UTF_8),
@@ -197,7 +192,7 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
                         matchedFiles
                 ),     // XXXX SEROK no_of_files IP port hops filename1 filename2
                 split[2],
-                split[3]
+                Integer.parseInt(split[3])
             ); // send the response
         }
          if (hops > 0) {

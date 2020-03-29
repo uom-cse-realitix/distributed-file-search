@@ -20,6 +20,7 @@ public class FileExecutorConfiguration extends Configuration {
 
     private int hops;
 
+    @JsonProperty(required = false)
     private int webPort;
 
     @JsonProperty

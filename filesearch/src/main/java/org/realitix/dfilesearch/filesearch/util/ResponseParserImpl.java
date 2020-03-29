@@ -29,7 +29,7 @@ public class ResponseParserImpl implements ResponseParser<String>{
                 logger.info("SEROK Received");
                 break;
             default:
-                logger.error("Passed to RequestParser.");
+                logger.info("Passed to RequestParser.");
         }
     }
 

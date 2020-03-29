@@ -4,13 +4,17 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
+import io.dropwizard.jetty.ConnectorFactory;
+import io.dropwizard.jetty.HttpConnectorFactory;
+import io.dropwizard.lifecycle.ServerLifecycleListener;
+import io.dropwizard.server.DefaultServerFactory;
+import io.dropwizard.server.SimpleServerFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.views.ViewBundle;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.socket.DatagramPacket;
 import io.netty.util.CharsetUtil;
 import io.netty.util.internal.SocketUtils;
@@ -20,9 +24,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
 import org.realitix.dfilesearch.filesearch.beans.Node;
 import org.realitix.dfilesearch.filesearch.beans.UserInterfaceBean;
-import org.realitix.dfilesearch.filesearch.beans.messages.CommonMessage;
 import org.realitix.dfilesearch.filesearch.beans.messages.JoinRequest;
 import org.realitix.dfilesearch.filesearch.configuration.FileExecutorConfiguration;
 import org.realitix.dfilesearch.filesearch.socket.UDPClient;
@@ -32,10 +39,10 @@ import org.realitix.dfilesearch.webservice.beans.FileResponse;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.sql.Array;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
 
@@ -66,6 +73,20 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
         registerBackendClient(fileExecutorConfiguration);
         startWebService(environment);
         fileList.forEach(logger::info);
+        environment.lifecycle().addServerLifecycleListener(server -> {
+            Stream<ConnectorFactory> connectors = configuration.getServerFactory() instanceof DefaultServerFactory
+                    ? ((DefaultServerFactory) fileExecutorConfiguration.getServerFactory()).getApplicationConnectors()
+                    .stream() : Stream.of((SimpleServerFactory) fileExecutorConfiguration.getServerFactory())
+                    .map(SimpleServerFactory::getConnector);
+            int port = connectors
+                    .filter(connector -> connector.getClass().isAssignableFrom(HttpConnectorFactory.class))
+                    .map(connector -> (HttpConnectorFactory) connector)
+                    .mapToInt(HttpConnectorFactory::getPort)
+                    .findFirst()
+                    .orElseThrow(IllegalStateException::new);
+            configuration.setWebPort(port);
+            logger.info(String.format("Web Port set to: %d", port));
+        });
     }
 
     private void startWebService(Environment environment) {
@@ -83,7 +104,6 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
         try {
             udpChannel = client.register(configuration.getBootstrapServer().getHost(),
                     configuration.getBootstrapServer().getPort()).sync().await().channel();
-//            client.join(udpChannel, neighbourMap, client.getHost(), client.getPort());
         } catch (InterruptedException e) {
             logger.error(e.getMessage());
             Thread.currentThread().interrupt();
@@ -129,7 +149,6 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
     }
 
 
-
     public static List<String> getHashedRequests() {
         return hashedRequests;
     }
@@ -156,7 +175,7 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
      */
     @Path("/file")
     @Produces(MediaType.APPLICATION_JSON)
-    public class FileSharingResource {
+    public static class FileSharingResource {
 
         private final Logger logger = LogManager.getLogger(this.getClass());
 
@@ -187,14 +206,16 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
             return Response.status(201).build();
         }
 
-            @GET
+        @GET
         @Path("/map")
         public Response getNodeMap() {
             Response r = null;
             try {
+                ArrayList<Node> nodes = new ArrayList<>(FileSearchExecutor.neighbourMap.getNodeMap().values());
+                nodes.addAll(joinMap);
                 r = Response.status(200)
                         .entity((new ObjectMapper())
-                                .writeValueAsString(FileSearchExecutor.neighbourMap.getNodeMap()))
+                                .writeValueAsString(nodes))
                         .build();
             } catch (JsonProcessingException e) {
                 logger.error(e.getMessage());
@@ -266,10 +287,11 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
 
         /**
          * Synthesizes a response for the request. Only in case a file is found in this particular node.
-         * @param hostIp IP of this node
-         * @param port port of this node
+         *
+         * @param hostIp    IP of this node
+         * @param port      port of this node
          * @param noOfFiles number of files found w.r.t the regular pattern
-         * @param hops number of hops indicated in the request
+         * @param hops      number of hops indicated in the request
          * @param fileNames names of the matched files
          * @return the response to be sent to the asking node
          */
@@ -286,13 +308,14 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
                     " " +
                     StringUtils.join(fileNames, " ");
             int length = basicString.length() + 5;
-            return length + " " + basicString;
+            return "00" + length + " " + basicString;
         }
 
         /**
          * Decrements the hops and returns the new request
          * e.g. if the hops in the request is 5 (i.e. 5 more hops to be propagated), 5 - 1 = 4 hops are there after this node.
          * Should be called if the number of hops in the request is larger than 0.
+         *
          * @param request request which arrived at the node
          * @return new request to be propogated
          */
@@ -312,6 +335,7 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
          * Sends JOIN, and REG commands.
          * Initiates SER command
          * Cognitive complexity of this method is high. Refactor it according to definitions (https://www.sonarsource.com/docs/CognitiveComplexity.pdf)
+         *
          * @param command the executing command
          * @throws InterruptedException thread interruptions
          */
@@ -335,45 +359,45 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
                     if (split.length > 4) hops = Integer.parseInt(split[5]);
                     final Pattern pattern = Pattern.compile(String.join("\\b",
                             split[4], "\\b"));
-                        List<String> matchedFiles = fileList
-                                .stream()
-                                .filter(file -> pattern.matcher(file).matches())
-                                .collect(Collectors.toList());
-                        int fileCount = matchedFiles.size();
-                        if (fileCount != 0) {
-                            logger.info("File matched!");
-                            write(udpChannel, synthesizeSerResponse(
-                                    udpClient.getHost(),
-                                    udpClient.getConfiguration().getWebPort(),    // this port needs to be the web port
-                                    fileCount,
-                                    0,
-                                    matchedFiles),
-                                    split[2],
-                                    Integer.parseInt(split[3]));
-                        }
-                        final String propagateRequest = propagateRequest(command);
-                        logger.info("Request propogate: " + propagateRequest);
-                        if (hops > 0) {
-                            joinMap.forEach(
-                                    node -> {
-                                        try {
-                                            write(udpChannel, propagateRequest, node.getIp(), node.getPort());
-                                        } catch (InterruptedException e) {
-                                            logger.error(e.getMessage());
-                                            Thread.currentThread().interrupt();
-                                        }
+                    List<String> matchedFiles = fileList
+                            .stream()
+                            .filter(file -> pattern.matcher(file).matches())
+                            .collect(Collectors.toList());
+                    int fileCount = matchedFiles.size();
+                    if (fileCount != 0) {
+                        logger.info("File matched!");
+                        write(udpChannel, synthesizeSerResponse(
+                                udpClient.getHost(),
+                                udpClient.getConfiguration().getWebPort(),    // this port needs to be the web port
+                                fileCount,
+                                0,
+                                matchedFiles),
+                                split[2],
+                                Integer.parseInt(split[3]));
+                    }
+                    final String propagateRequest = propagateRequest(command);
+                    logger.info("Request propogate: " + propagateRequest);
+                    if (hops > 0) {
+                        joinMap.forEach(
+                                node -> {
+                                    try {
+                                        write(udpChannel, propagateRequest, node.getIp(), node.getPort());
+                                    } catch (InterruptedException e) {
+                                        logger.error(e.getMessage());
+                                        Thread.currentThread().interrupt();
                                     }
-                            );
-                            FileSearchExecutor.neighbourMap.getNodeMap()
-                                    .forEach((id, node) -> {
-                                        try {
-                                            write(udpChannel, propagateRequest, node.getIp(), node.getPort());
-                                        } catch (InterruptedException e) {
-                                            logger.error(e.getMessage());
-                                            Thread.currentThread().interrupt();
-                                        }
-                                    });
-                        }
+                                }
+                        );
+                        FileSearchExecutor.neighbourMap.getNodeMap()
+                                .forEach((id, node) -> {
+                                    try {
+                                        write(udpChannel, propagateRequest, node.getIp(), node.getPort());
+                                    } catch (InterruptedException e) {
+                                        logger.error(e.getMessage());
+                                        Thread.currentThread().interrupt();
+                                    }
+                                });
+                    }
                     break;
                 default:
                     logger.error("Unknown command from the UI.");

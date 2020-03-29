@@ -117,6 +117,9 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
             response = "0017 LEAVEOK 9999";
             if (length == actualLength) {
                 FileSearchExecutor.getJoinMap().removeIf(node -> (node.getIp().equals(ip)) && (node.getPort() == port));
+                FileSearchExecutor.neighbourMap.getNodeMap().entrySet()
+                        .removeIf(entry ->
+                                (entry.getValue().getIp().equals(ip) && entry.getValue().getPort() == port));
                 logger.info("Node removed");
             } else response = "0017 LEAVEOK 9999";
         }
@@ -185,19 +188,20 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
         if (fileCount != 0) {
             UDPClient client = FileSearchExecutor.getUdpClient();
             write(
-                    ctx,
-                    synthesizeSerResponse(      // creates SEROK
-                            client.getHost(),
-                            client.getConfiguration().getWebPort(),   // this port needs to be the web port
-                            fileCount,
-                            hops,
-                            matchedFiles
-                    ),     // XXXX SEROK no_of_files IP port hops filename1 filename2
-                    split[2],
-                    split[3]
+                ctx,
+                synthesizeSerResponse(      // creates SEROK
+                        client.getHost(),
+                        client.getConfiguration().getWebPort(),   // this port needs to be the web port
+                        fileCount,
+                        hops,
+                        matchedFiles
+                ),     // XXXX SEROK no_of_files IP port hops filename1 filename2
+                split[2],
+                split[3]
             ); // send the response
         }
          if (hops > 0) {
+             logger.warn("Hop count is: " + hops + ". Therefore, I'm forwarding this request.");
              nodeMap.forEach(node -> write(ctx, propagateRequest(request), node.getIp(), node.getPort()));
              FileSearchExecutor.neighbourMap.getNodeMap().forEach((id, node) ->
                      write(ctx, propagateRequest(request), node.getIp(), node.getPort()));

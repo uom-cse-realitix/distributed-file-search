@@ -1,6 +1,7 @@
 package org.realitix.dfilesearch.filesearch.configuration;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * Configures the port information
@@ -11,6 +12,7 @@ public class NodeConfiguration {
     private String host;
     @Nullable
     private String username;
+    private List<String> files;
 
     public int getPort() {
         return port;
@@ -35,5 +37,13 @@ public class NodeConfiguration {
 
     public void setUsername(@Nullable String username) {
         this.username = username;
+    }
+
+    public List<String> getFiles() {
+        return files;
+    }
+
+    public void setFiles(List<String> files) {
+        this.files = files;
     }
 }

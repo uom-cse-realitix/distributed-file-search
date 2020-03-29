@@ -15,8 +15,35 @@ client:
   port: 5001
   host: 127.0.0.1
   username: 1234abcd
+  files:
+    - Shadows
+    - Sapiens
+    - Deus
+    - Tamed
+    - Cosmos
+    - OutgrowingGod
+    - Habit
+    - CosmicConnection
+    - ThinkingFastAndSlow
+    - MansSearchForMeaning
+    - DragonsOfEden
+    - SurelyYoureJoking
+    - RedLimit
+    - FutureOfHumanity
+    - EinstinesCosmos
+    - ThirdWave
+    - SpinningMagnet
+    - BookOfUniverses
+    - 12RulesForLife
+    - ConstantsOfNature
+    - PhysicsOfFuture
+    - TwoSidesOfTheMoon
+    - Money
+    - OutgrowingGod
+    - OnGovernment
+    - OnOriginsOfSpecies
 
-# === BootstrapServer Configs ===
+      # === BootstrapServer Configs ===
 bootstrapServer:
   port: 55555
   host: 127.0.0.1

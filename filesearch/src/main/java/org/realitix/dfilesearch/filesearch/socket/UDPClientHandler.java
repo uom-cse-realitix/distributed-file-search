@@ -141,9 +141,8 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
                         SocketUtils.socketAddress(host, port)));
     }
 
-
     /**
-     * Parses the SER request for a file'
+     * Parses the SER request for a file
      * e.g. length SER IP port file_name hops
      * If the file is found, this host should respond with its socket credentials.
      * Use JoinMap instead of NeighborMap, to query the responded nodes. Nodes responded by the bootstrap server (captured in NeighborMap) might not be available.

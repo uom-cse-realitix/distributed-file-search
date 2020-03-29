@@ -56,7 +56,6 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
 
     @Override
     public void initialize(Bootstrap<FileExecutorConfiguration> bootstrap) {
-        fileList = initializeFileList();
         bootstrap.addBundle(new AssetsBundle("/assets/", "/", "index.html"));
         bootstrap.addBundle(new ViewBundle<FileExecutorConfiguration>());
     }
@@ -65,9 +64,19 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
     public void run(FileExecutorConfiguration fileExecutorConfiguration, Environment environment) {
         BasicConfigurator.configure();
         configuration = fileExecutorConfiguration;
+        fileList = initializeFileList(fileExecutorConfiguration);
         registerBackendClient(fileExecutorConfiguration);
         startWebService(environment);
         fileList.forEach(logger::info);
+        setWebPort(fileExecutorConfiguration, environment);
+    }
+
+    /**
+     * Sets web port of the configuration. This is sent to the nodes in SEROK.
+     * @param fileExecutorConfiguration configuration bean
+     * @param environment dropwizard environment bean
+     */
+    private void setWebPort(FileExecutorConfiguration fileExecutorConfiguration, Environment environment) {
         environment.lifecycle().addServerLifecycleListener(server -> {
             Stream<ConnectorFactory> connectors = configuration.getServerFactory() instanceof DefaultServerFactory
                     ? ((DefaultServerFactory) fileExecutorConfiguration.getServerFactory()).getApplicationConnectors()
@@ -106,35 +115,8 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
         udpClient = client;
     }
 
-    private List<String> initializeFileList() {
-        List<String> list = Arrays.asList(
-                "Shadows",
-                "Sapiens",
-                "Deus",
-                "Tamed",
-                "Cosmos",
-                "OutgrowingGod",
-                "Habit",
-                "CosmicConnection",
-                "ThinkingFastAndSlow",
-                "MansSearchForMeaning",
-                "DragonsOfEden",
-                "SurelyYoureJoking",
-                "RedLimit",
-                "FutureOfHumanity",
-                "EinstinesCosmos",
-                "ThirdWave",
-                "SpinningMagnet",
-                "BookOfUniverses",
-                "12RulesForLife",
-                "ConstantsOfNature",
-                "PhysicsOfFuture",
-                "TwoSidesOfTheMoon",
-                "Money",
-                "OutgrowingGod",
-                "OnGovernment",
-                "OnOriginsOfSpecies"
-        );
+    private List<String> initializeFileList(FileExecutorConfiguration configuration) {
+        List<String> list = configuration.getClient().getFiles();
         Collections.shuffle(list);
         return new ArrayList<>(new HashSet<>(list.subList(0, 5)));
     }

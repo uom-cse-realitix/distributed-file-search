@@ -34,6 +34,9 @@ import org.realitix.dfilesearch.webservice.beans.FileResponse;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -100,14 +103,19 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
     }
 
     private static void registerBackendClient(FileExecutorConfiguration configuration) {
-        final UDPClient client = UDPClient.UDPClientBuilder.newInstance()
+        final UDPClient client = UDPClient
+                .UDPClientBuilder
+                .newInstance()
                 .setHost(configuration.getClient().getHost())
                 .setPort(configuration.getClient().getPort())
                 .setUsername(configuration.getClient().getUsername())
                 .build(configuration);
         try {
-            udpChannel = client.register(configuration.getBootstrapServer().getHost(),
-                    configuration.getBootstrapServer().getPort()).sync().await().channel();
+            udpChannel = client
+                    .register(configuration.getBootstrapServer().getHost(), configuration.getBootstrapServer().getPort())
+                    .sync()
+                    .await()
+                    .channel();
         } catch (InterruptedException e) {
             logger.error(e.getMessage());
             Thread.currentThread().interrupt();
@@ -161,6 +169,21 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
         public Response getFile(@PathParam("fileName") String fileName) {
             return Response.status(200).entity(synthesizeFile(fileName)).build();
         }
+
+
+        @GET
+        @Path("{fileName}/download")
+        public Response download(@PathParam("fileName") String fileName) {
+            try {
+                return Response.ok(sendFile(fileName), MediaType.APPLICATION_OCTET_STREAM)
+                        .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
+                        .build();
+            } catch (IOException e) {
+                Thread.currentThread().interrupt();
+            }
+            return Response.accepted().build();
+        }
+
 
         @POST
         @Path("/command")
@@ -253,6 +276,18 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
                     .build();
             logger.info("File synthesizing completed.");
             return fileResponse;
+        }
+
+        private File sendFile(String fileName) throws IOException {
+            logger.info("Synthesizing the file");
+            String randomString = fileName + RandomStringUtils.randomAlphabetic(20).toUpperCase();
+            File file = new File(fileName);
+            if (file.createNewFile()) {
+                FileWriter writer = new FileWriter(file, true);
+                writer.write(randomString);
+                writer.close();
+                return file;
+            } else return null;
         }
 
         public ChannelFuture write(Channel channel, String message, String remoteIp, int remotePort)

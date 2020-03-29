@@ -5,6 +5,20 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.realitix.dfilesearch.filesearch.FileSearchExecutor;
 import org.realitix.dfilesearch.filesearch.beans.Node;
+import sun.net.www.http.HttpClient;
+
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Invocation;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 public class ResponseParserImpl implements ResponseParser<String>{
 
@@ -27,6 +41,12 @@ public class ResponseParserImpl implements ResponseParser<String>{
                 break;
             case "SEROK":
                 logger.info("SEROK Received");
+                try {
+                    parseSerOk(s);
+                } catch (IOException e) {
+                    logger.error(e.getMessage());
+                    Thread.currentThread().interrupt();
+                }
                 break;
             default:
                 logger.info("Passed to RequestParser.");
@@ -55,6 +75,16 @@ public class ResponseParserImpl implements ResponseParser<String>{
             logger.info("This is the first node. Response from BS: " + s);
         }
 
+    }
+
+    private void parseSerOk(String ser) throws IOException {
+        String ip = ser.split(" ")[3];
+        int port = Integer.parseInt(ser.split(" ")[4]);
+        Client client = ClientBuilder.newClient();
+        WebTarget target = client.target(String.format("http://%s:%d/api/file/%s/download", ip, port, ser.split(" ")[6]));
+        logger.info("Sending request to: " + String.format("http://%s:%d/api/file/%s/download", ip, port, ser.split(" ")[6]));
+        Invocation.Builder invocationBuilder = target.request(MediaType.APPLICATION_JSON);
+        invocationBuilder.get();
     }
 
     private void parseUnRegok(String s) {

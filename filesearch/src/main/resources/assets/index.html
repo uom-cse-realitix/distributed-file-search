@@ -12,7 +12,10 @@
             <p class="h4 mb-4">Enter your query here.</p>
             <button class="btn btn-primary my-4" onclick="join()">Join</button>
             <input name="cmd" type="text" id="command" class="form-control mb-4" placeholder="Query">
-            <button class="btn btn-info btn-block my-4" onclick="execute()">Execute</button>
+            <div class="row">
+                <div class="col-xs-6 col-xl-6 item"><button class="btn btn-info btn-block my-4" onclick="join()">Join</button></div>
+                <div class="col-xs-6 col-xl-6 item"><button class="btn btn-info btn-block my-4" onclick="execute()">Execute</button></div>
+            </div>
             <p>Length: <span id="characters"></span></p>
         </div>
     </div>

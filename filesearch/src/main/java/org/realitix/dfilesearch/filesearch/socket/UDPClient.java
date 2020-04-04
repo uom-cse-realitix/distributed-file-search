@@ -2,7 +2,10 @@ package org.realitix.dfilesearch.filesearch.socket;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.*;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.DatagramChannel;
 import io.netty.channel.socket.DatagramPacket;
@@ -18,8 +21,6 @@ import org.realitix.dfilesearch.filesearch.configuration.FileExecutorConfigurati
 import org.realitix.dfilesearch.filesearch.util.NodeMap;
 
 import java.net.InetSocketAddress;
-import java.util.Arrays;
-import java.util.Iterator;
 
 public class UDPClient {
 
@@ -41,6 +42,7 @@ public class UDPClient {
      * Creates a channel abstraction on top of a socket.
      * Uses NioDatagramChannel (for UDP), therefore no notion of a connection. Channel is only bound to a port.
      * Channel acts as a vehicle which unreliably deliver DatagramPackets to their destinations.
+     *
      * @param channelInitializer initializer of the channel.
      * @return created channel.
      * @throws InterruptedException interruptions
@@ -59,9 +61,10 @@ public class UDPClient {
      * Runs the client socket
      * Registers the node with BS
      * Method connect() connects to a remote server and bind() binds the process to a local socket
-     * @param bootstrapIp server host IP
+     *
+     * @param bootstrapIp   server host IP
      * @param bootstrapPort server port
-     * host and port should be configured in the jar.
+     *                      host and port should be configured in the jar.
      */
     public ChannelFuture register(String bootstrapIp, int bootstrapPort) throws InterruptedException {
         Channel channel = createChannel(new UDPClientInitializer());
@@ -90,16 +93,17 @@ public class UDPClient {
 
     /**
      * Write different messages
-     * @param channel channel between the client and server
-     * @param message transmitted message
-     * @param remoteIp IP of bootstrap server
+     *
+     * @param channel    channel between the client and server
+     * @param message    transmitted message
+     * @param remoteIp   IP of bootstrap server
      * @param remotePort IP of bootstrap server
      * @throws InterruptedException
      */
     public ChannelFuture write(Channel channel, CommonMessage message, String remoteIp, int remotePort)
             throws InterruptedException {
-       return channel.writeAndFlush(new DatagramPacket(Unpooled.copiedBuffer(message.toString(), CharsetUtil.UTF_8),
-               SocketUtils.socketAddress(remoteIp, remotePort))).sync().await();
+        return channel.writeAndFlush(new DatagramPacket(Unpooled.copiedBuffer(message.toString(), CharsetUtil.UTF_8),
+                SocketUtils.socketAddress(remoteIp, remotePort))).sync().await();
     }
 
     public String getHost() {
@@ -143,9 +147,10 @@ public class UDPClient {
             return new UDPClientBuilder();
         }
 
-        private UDPClientBuilder() {}
+        private UDPClientBuilder() {
+        }
 
-        public UDPClientBuilder setHost (String host) {
+        public UDPClientBuilder setHost(String host) {
             this.host = host;
             return this;
         }

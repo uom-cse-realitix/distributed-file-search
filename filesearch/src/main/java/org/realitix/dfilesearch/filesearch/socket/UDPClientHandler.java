@@ -52,7 +52,7 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause ) {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         logger.error(cause.getMessage());
         ctx.channel().close();
     }
@@ -97,9 +97,10 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
 
     /**
      * When a JOIN message arrives, processes it, puts the corresponding node into a joinMap, and sends the response
+     *
      * @param request sent by the node
-     * @param ctx context
-     * @param type type of request
+     * @param ctx     context
+     * @param type    type of request
      */
     private void parseLeaveAndJoin(String request, ChannelHandlerContext ctx, REQUEST_TYPE type) {
         String response = null;
@@ -131,10 +132,11 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
 
     /**
      * Write to the socket
-     * @param ctx channel handler context
+     *
+     * @param ctx     channel handler context
      * @param message message to be written from the socket
-     * @param host destination IP
-     * @param port destination port
+     * @param host    destination IP
+     * @param port    destination port
      */
     private void write(ChannelHandlerContext ctx, String message, String host, int port) {
         ctx.channel().writeAndFlush(
@@ -149,9 +151,10 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
      * Use JoinMap instead of NeighborMap, to query the responded nodes. Nodes responded by the bootstrap server (captured in NeighborMap) might not be available.
      * split[2]: host IP, split[3]: host port, split[4]: file name
      * When the file is found, the node having the file responds with its IP and file names it has stored.
+     *
      * @param request request string
-     * @param ctx channel context
-     * @param type type of the request
+     * @param ctx     channel context
+     * @param type    type of the request
      */
     private void parseSer(final String request, final ChannelHandlerContext ctx, REQUEST_TYPE type) {
         // parse SER request
@@ -183,32 +186,33 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
         if (fileCount != 0) {
             UDPClient client = FileSearchExecutor.getUdpClient();
             write(
-                ctx,
-                synthesizeSerResponse(      // creates SEROK
-                        client.getHost(),
-                        client.getConfiguration().getWebPort(),   // this port needs to be the web port
-                        fileCount,
-                        hops,
-                        matchedFiles
-                ),     // XXXX SEROK no_of_files IP port hops filename1 filename2
-                split[2],
-                Integer.parseInt(split[3])
+                    ctx,
+                    synthesizeSerResponse(      // creates SEROK
+                            client.getHost(),
+                            client.getConfiguration().getWebPort(),   // this port needs to be the web port
+                            fileCount,
+                            hops,
+                            matchedFiles
+                    ),     // XXXX SEROK no_of_files IP port hops filename1 filename2
+                    split[2],
+                    Integer.parseInt(split[3])
             ); // send the response
         }
-         if (hops > 0) {
-             logger.warn("Hop count is: " + hops + ". Therefore, I'm forwarding this request.");
-             nodeMap.forEach(node -> write(ctx, propagateRequest(request), node.getIp(), node.getPort()));
-             FileSearchExecutor.neighbourMap.getNodeMap().forEach((id, node) ->
-                     write(ctx, propagateRequest(request), node.getIp(), node.getPort()));
-         }
+        if (hops > 0) {
+            logger.warn("Hop count is: " + hops + ". Therefore, I'm forwarding this request.");
+            nodeMap.forEach(node -> write(ctx, propagateRequest(request), node.getIp(), node.getPort()));
+            FileSearchExecutor.neighbourMap.getNodeMap().forEach((id, node) ->
+                    write(ctx, propagateRequest(request), node.getIp(), node.getPort()));
+        }
     }
 
     /**
      * Synthesizes a response for the request. Only in case a file is found in this particular node.
-     * @param hostIp IP of this node
-     * @param port port of this node
+     *
+     * @param hostIp    IP of this node
+     * @param port      port of this node
      * @param noOfFiles number of files found w.r.t the regular pattern
-     * @param hops number of hops indicated in the request
+     * @param hops      number of hops indicated in the request
      * @param fileNames names of the matched files
      * @return the response to be sent to the asking node
      */
@@ -232,6 +236,7 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
      * Decrements the hops and returns the new request
      * e.g. if the hops in the request is 5 (i.e. 5 more hops to be propagated), 5 - 1 = 4 hops are there after this node.
      * Should be called if the number of hops in the request is larger than 0.
+     *
      * @param request request which arrived at the node
      * @return new request to be propogated
      */

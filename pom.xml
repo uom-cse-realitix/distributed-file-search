@@ -8,11 +8,40 @@
     <artifactId>dfilesearch</artifactId>
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
-    <modules>
-        <module>webservice</module>
-        <module>filesearch</module>
-        <module>bootstrapserver</module>
-    </modules>
 
+    <profiles>
+        <profile>
+            <id>bootstrap-server</id>
+            <modules>
+                <module>./bootstrapserver</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>file-search</id>
+            <modules>
+                <module>./filesearch</module>
+                <module>./webservice</module>
+            </modules>
+        </profile>
+    </profiles>
 
+    <build>
+        <plugins>
+            <!-- display active profile in compile phase -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-help-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>show-profiles</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>active-profiles</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

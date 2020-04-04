@@ -76,8 +76,9 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
 
     /**
      * Sets web port of the configuration. This is sent to the nodes in SEROK.
+     *
      * @param fileExecutorConfiguration configuration bean
-     * @param environment dropwizard environment bean
+     * @param environment               dropwizard environment bean
      */
     private void setWebPort(FileExecutorConfiguration fileExecutorConfiguration, Environment environment) {
         environment.lifecycle().addServerLifecycleListener(server -> {

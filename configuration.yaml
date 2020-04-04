@@ -5,14 +5,14 @@ server:
   rootPath: /api/
   applicationConnectors:
     - type: http
-      port: 8090
+      port: 8094
   adminConnectors:
     - type: http
-      port: 8091
+      port: 8095
 
 # === Client Configs ===
 client:
-  port: 5001
+  port: 5003
   host: 127.0.0.1
   username: 1234abcd
   files:

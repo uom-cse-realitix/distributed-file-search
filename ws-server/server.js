@@ -22,7 +22,7 @@ wss.on('connection', function connection(ws) {
  * TCP Server
  */
 // Include Nodejs' net module.
-const Net = require('net');
+const Net = require("net");
 // The port on which the server is listening.
 const port = 3000;
 

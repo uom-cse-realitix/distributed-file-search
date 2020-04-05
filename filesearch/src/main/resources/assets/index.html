@@ -10,49 +10,52 @@
     <script src="js/ws2s.js"></script>
 </head>
 <body>
-    <div class="container">
-        <div class="text-center border border-light p-5">
-            <p class="h4 mb-4">Enter your query here.</p>
-            <button class="btn btn-primary my-4" onclick="join()">Join</button>
-            <input name="cmd" type="text" id="command" class="form-control mb-4" placeholder="Query">
-            <button class="btn btn-info btn-block my-4" onclick="execute()">Execute</button>
-            <p>Length: <span id="characters"></span></p>
-        </div>
+<div class="container">
+    <div class="text-center border border-light p-5">
+        <p class="h4 mb-4">Enter your query here.</p>
+        <button class="btn btn-primary my-4" onclick="join()">Join</button>
+        <input name="cmd" type="text" id="command" class="form-control mb-4" placeholder="Query">
+        <button class="btn btn-info btn-block my-4" onclick="execute()">Execute</button>
+        <p>Length: <span id="characters"></span></p>
     </div>
-    <script src="js/bootstrap.min.js"></script>
-    <script>
-        var ws = new WebSocket('ws://localhost:3001', 'a');
+</div>
+<div class="container" style="background-color: #343a40; overflow-y: scroll; height: 300px;">
+    <code style="word-break: normal; color: white;"><p id="console-terminal"></p></code>
+</div>
+<br><br>
+<script src="js/bootstrap.min.js"></script>
+<script>
+    var ws = new WebSocket('ws://localhost:3001', 'a');
+    ws.onopen = function () {
+        console.log("ws connection open");
+    };
+    ws.onmessage = function (event) {
+        console.log(event.data);
+        $('#console-terminal').append(event.data).append("<br/>");
+    };
+</script>
+<script>
+    function execute() {
+        let value = document.getElementById("command").value;
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "/api/file/command", false);   // false for a synchronous operation
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        console.log("Sending command: " + value);
+        xhr.send(JSON.stringify({value: value}));
+        document.getElementById("command").value = "";
+    }
 
-        ws.onopen = function () {
-            console.log("ws connection open");
-        };
+    function join() {
+        const xhr = new XMLHttpRequest();
+        xhr.open("GET", "/api/file/join", false);   // false for a synchronous operation
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.send();
+    }
 
-        ws.onmessage = function (event) {
-            console.log(event.data);
-        };
-    </script>
-    <script>
-        function execute() {
-            let value = document.getElementById("command").value;
-            const xhr = new XMLHttpRequest();
-            xhr.open("POST", "/api/file/command", false);   // false for a synchronous operation
-            xhr.setRequestHeader('Content-Type', 'application/json');
-            console.log("Sending command: " + value);
-            xhr.send(JSON.stringify({value: value}));
-            document.getElementById("command").value = "";
-        }
-
-        function join() {
-            const xhr = new XMLHttpRequest();
-            xhr.open("GET", "/api/file/join", false);   // false for a synchronous operation
-            xhr.setRequestHeader('Content-Type', 'application/json');
-            xhr.send();
-        }
-
-        $('#characters').text(0);
-        $('input[name="cmd"]').on('keyup keydown', function () {
-            $("#characters").text($(this).val().length);
-        });
-    </script>
+    $('#characters').text(0);
+    $('input[name="cmd"]').on('keyup keydown', function () {
+        $("#characters").text($(this).val().length);
+    });
+</script>
 </body>
 </html>

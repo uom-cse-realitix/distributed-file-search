@@ -2,15 +2,25 @@
  * Opens a TCP server to receive server logs.
  */
 
+/**
+ * WebSocket Server
+ * @type {WebSocket}
+ */
 const WebSocket = require('ws');
 const wss = new WebSocket.Server({ port: 3001 });
 
 wss.on('connection', function connection(ws) {
     ws.on('message', function incoming(message) {
         console.log('received: %s', message);
+        wss.clients.forEach(function each(client) {
+            if (client !== ws && client.readyState === WebSocket.OPEN) client.send(message);
+        })
     });
 });
 
+/**
+ * TCP Server
+ */
 // Include Nodejs' net module.
 const Net = require('net');
 // The port on which the server is listening.
@@ -33,6 +43,7 @@ server.on('connection', function(socket) {
     socket.on('data', function(chunk) {
         console.log("Data received from client:" +  chunk.toString() );
         const ws = new WebSocket("ws://localhost:3001");
+        // send incoming data to the websocket server
         ws.on('open', function open() {
             ws.send(chunk.toString());
             ws.close();

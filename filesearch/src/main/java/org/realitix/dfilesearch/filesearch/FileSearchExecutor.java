@@ -23,6 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 import org.realitix.dfilesearch.filesearch.beans.Node;
 import org.realitix.dfilesearch.filesearch.beans.UserInterfaceBean;
 import org.realitix.dfilesearch.filesearch.beans.messages.JoinRequest;
@@ -34,9 +35,7 @@ import org.realitix.dfilesearch.webservice.beans.FileResponse;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -65,7 +64,6 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
 
     @Override
     public void run(FileExecutorConfiguration fileExecutorConfiguration, Environment environment) {
-        BasicConfigurator.configure();
         configuration = fileExecutorConfiguration;
         fileList = initializeFileList(fileExecutorConfiguration);
         registerBackendClient(fileExecutorConfiguration);

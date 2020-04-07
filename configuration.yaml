@@ -69,3 +69,7 @@ bootstrapServer:
 
 # === Network Configs
 hops: 4
+
+monitoringConf:
+  host: 127.0.0.1
+  port: 5000

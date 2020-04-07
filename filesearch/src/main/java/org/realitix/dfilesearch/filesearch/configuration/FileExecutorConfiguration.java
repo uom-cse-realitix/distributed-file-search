@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.dropwizard.Configuration;
 
 import javax.validation.constraints.NotEmpty;
-import java.util.List;
 
 /**
  * Configuration for FileSearchExecutor
@@ -20,6 +19,8 @@ public class FileExecutorConfiguration extends Configuration {
     private NodeConfiguration bootstrapServer;
 
     private int hops;
+
+    private MonitoringConfiguration monitoringConf;
 
     @JsonProperty(required = false)
     private int webPort;
@@ -64,5 +65,13 @@ public class FileExecutorConfiguration extends Configuration {
 
     public void setWebPort(int webPort) {
         this.webPort = webPort;
+    }
+
+    public MonitoringConfiguration getMonitoringConf() {
+        return monitoringConf;
+    }
+
+    public void setMonitoringConf(MonitoringConfiguration monitoringConf) {
+        this.monitoringConf = monitoringConf;
     }
 }

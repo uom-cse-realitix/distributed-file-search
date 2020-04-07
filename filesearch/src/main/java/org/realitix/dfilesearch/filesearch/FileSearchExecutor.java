@@ -12,9 +12,11 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.views.ViewBundle;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
+import io.netty.channel.*;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.DatagramPacket;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.CharsetUtil;
 import io.netty.util.internal.SocketUtils;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -28,6 +30,7 @@ import org.realitix.dfilesearch.filesearch.beans.Node;
 import org.realitix.dfilesearch.filesearch.beans.UserInterfaceBean;
 import org.realitix.dfilesearch.filesearch.beans.messages.JoinRequest;
 import org.realitix.dfilesearch.filesearch.configuration.FileExecutorConfiguration;
+import org.realitix.dfilesearch.filesearch.socket.MonitoringInitializer;
 import org.realitix.dfilesearch.filesearch.socket.UDPClient;
 import org.realitix.dfilesearch.filesearch.util.NodeMap;
 import org.realitix.dfilesearch.webservice.beans.FileResponse;
@@ -37,6 +40,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -70,6 +74,13 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
         startWebService(environment);
         fileList.forEach(logger::info);
         setWebPort(fileExecutorConfiguration, environment);
+        try {
+            Channel monitoringClient = registerMonitoringClient(fileExecutorConfiguration);
+            initiateHeartBeat(monitoringClient);
+        } catch (InterruptedException e) {
+            logger.error(e.getMessage());
+            Thread.currentThread().interrupt();
+        }
     }
 
     /**
@@ -99,6 +110,34 @@ public class FileSearchExecutor extends Application<FileExecutorConfiguration> {
         logger.info("Enabling Web Service..");
         environment.jersey().setUrlPattern("/api/*");
         environment.jersey().register(new FileSharingResource());
+    }
+
+    /**
+     * TODO: Check why the websocket client doesn't connect to nodejs monitoring server
+     * @param configuration configuration for dropwizard application
+     * @return socket channel
+     * @throws InterruptedException interrupt
+     */
+    private Channel registerMonitoringClient(FileExecutorConfiguration configuration) throws InterruptedException {
+        EventLoopGroup workerGroup = new NioEventLoopGroup();
+        io.netty.bootstrap.Bootstrap b = new io.netty.bootstrap.Bootstrap();
+        b.group(workerGroup);
+        b.channel(NioSocketChannel.class);
+        b.option(ChannelOption.SO_KEEPALIVE, true);
+        b.handler(new ChannelInitializer<SocketChannel>() {
+            @Override
+            public void initChannel(SocketChannel ch) throws Exception {
+                ch.pipeline().addLast(new MonitoringInitializer());
+            }
+        });
+        ChannelFuture f = b.connect(configuration.getMonitoringConf().getHost(),
+                configuration.getMonitoringConf().getPort()).sync();
+        return f.channel();
+    }
+
+    private void initiateHeartBeat(Channel heartBeatChannel) {
+        heartBeatChannel.eventLoop().scheduleAtFixedRate((Runnable) () ->
+                heartBeatChannel.writeAndFlush("PING"), 60, 60,  TimeUnit.MILLISECONDS);
     }
 
     private static void registerBackendClient(FileExecutorConfiguration configuration) {

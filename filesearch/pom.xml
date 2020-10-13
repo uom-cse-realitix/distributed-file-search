@@ -16,7 +16,7 @@
         <webservice.version>0.0.1-SNAPSHOT</webservice.version>
         <nettty.version>4.1.43.Final</nettty.version>
         <log4j.version>1.2.17</log4j.version>
-        <junit.version>4.12</junit.version>
+        <junit.version>4.13.1</junit.version>
     </properties>
 
     <dependencies>
